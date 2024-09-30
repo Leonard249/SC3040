@@ -1,0 +1,37 @@
+[tool.tox]
+legacy_tox_ini = """
+    [tox]
+    envlist =
+        py311
+    skipsdist = True
+
+    [testenv]
+    deps =
+        -r requirements.txt
+
+    [testenv:py311]
+    commands =
+        pytest \
+        --self-contained-html \
+        -s \
+        -v \
+        --cov=src \
+        --cov-report=xml:test-reports/coverage.xml \
+        --cov-branch \
+        --cov-fail-under=50 \
+        --junitxml=test-reports/junit.xml \
+        tests
+"""
+
+[tool.coverage.run]
+relative_files = true
+source = ["src/group_service"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 0
+show_missing = true
+skip_empty = true
+
+[tool.flake8]
+max-line-length = 100
