@@ -1,44 +1,139 @@
 .container {
-    /* Group Name: 我爱蓝鸟 */
+  /* Group Name: 我爱蓝鸟 */
 
-    position: absolute;
-    width: 300px;
-    height: 87px;
-    left: 231px;
-    top: 304px;
+  position: absolute;
+  width: 300px;
+  height: 87px;
+  left: 231px;
+  top: 304px;
 
-    font-family: 'Josefin Slab';
-    font-style: normal;
-    font-weight: 700;
-    font-size: 48px;
-    line-height: 48px;
+  font-family: "Josefin Slab";
+  font-style: normal;
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 48px;
 
-    color: #000000;
-
-
+  color: #000000;
 }
 
 .group-page {
-    display: flex;
-    justify-content: space-between;
-    padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
 }
 
 .left-box {
-    width: 60%;
-    /* Adjust this as needed */
-    height: 743px;
+  width: 60%;
+  /* Adjust this as needed */
+  height: 743px;
 
-    box-sizing: border-box;
+  box-sizing: border-box;
 
-    background: rgba(240, 240, 240, 0.67);
-    border: 1px solid #000000;
-    border-radius: 15px;
+  background: rgba(240, 240, 240, 0.67);
+  border: 1px solid #000000;
+  border-radius: 15px;
+}
 
+.top-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px; /* Add some space below */
+  justify-content: space-between;
+}
+
+.row-left {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.grouppage-font {
+  font-family: "Josefin Slab";
+  font-weight: bold;
+  font-size: 24px;
+  margin-right: 10px;
+}
+
+.row-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.group-id {
+  font-size: 18px;
+  color: #333;
+}
+
+.logo {
+  width: 50px;
+  height: 50px;
+}
+
+.content {
+  font-family: "Josefin Slab";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 18px;
+  color: #000000;
+}
+
+.settle-up {
+  width: 150px;
+  padding: 10px;
+  margin: 0 auto; /* Center horizontally */
+  display: block;
+  background-color: #4caf50;
+  color: white;
+  text-align: center;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.settle-up:hover {
+  background-color: #45a049; /* Hover effect */
 }
 
 .right-box {
-    flex: 1;
-    background-color: #e0e0e0;
-    padding: 20px;
+  flex: 1;
+  background-color: #ffffff;
+  padding: 20px;
+}
+.member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.member-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.add-member-button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #000;
+  color: white;
+  font-size: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.add-member-button:hover {
+  background-color: #333; /* Darker background on hover */
+}
+
+.add-member-button:focus {
+  outline: none;
 }
