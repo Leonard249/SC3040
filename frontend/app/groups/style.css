@@ -1,0 +1,44 @@
+.container {
+    /* Group Name: 我爱蓝鸟 */
+
+    position: absolute;
+    width: 300px;
+    height: 87px;
+    left: 231px;
+    top: 304px;
+
+    font-family: 'Josefin Slab';
+    font-style: normal;
+    font-weight: 700;
+    font-size: 48px;
+    line-height: 48px;
+
+    color: #000000;
+
+
+}
+
+.group-page {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+.left-box {
+    width: 60%;
+    /* Adjust this as needed */
+    height: 743px;
+
+    box-sizing: border-box;
+
+    background: rgba(240, 240, 240, 0.67);
+    border: 1px solid #000000;
+    border-radius: 15px;
+
+}
+
+.right-box {
+    flex: 1;
+    background-color: #e0e0e0;
+    padding: 20px;
+}
