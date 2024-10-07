@@ -9,10 +9,10 @@ import { AiOutlineDelete } from 'react-icons/ai'; // Import the delete icon
 const ITEM_TYPE = 'ITEM';
 
 // Draggable Item component
-const Item = ({ name, amount, onDrop, onDelete }) => {
+const Item = ({ id, name, amount, onDelete }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ITEM_TYPE,
-    item: { name, amount },
+    item: { id, name, amount },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -24,7 +24,7 @@ const Item = ({ name, amount, onDrop, onDelete }) => {
       className={`flex justify-between items-center p-2 mb-2 bg-blue-500 text-white rounded ${isDragging ? 'opacity-50' : 'opacity-100'}`}
     >
       <span>{name} - ${amount}</span>
-      <button onClick={onDelete} className="text-red-800 hover:text-red-700">
+      <button onClick={() => onDelete(id)} className="text-red-500 hover:text-red-700">
         <AiOutlineDelete />
       </button>
     </div>
@@ -48,13 +48,13 @@ const Member = ({ member, onDropItem, assignedItems, onDeleteItem }) => {
     >
       <p className="text-center">Member {member}</p>
       <div className="mt-2">
-        {assignedItems.map((item, idx) => (
+        {assignedItems.map((item) => (
           <Item
-            key={idx}
+            key={item.id} // Use the unique id
+            id={item.id} // Pass the unique id
             name={item.name}
             amount={item.amount}
-            onDrop={onDropItem}
-            onDelete={() => onDeleteItem(member, item)}
+            onDelete={() => onDeleteItem(member, item)} // Use the onDeleteItem passed down from SplitPage
           />
         ))}
       </div>
@@ -70,7 +70,7 @@ const ManualInputModal = ({ isOpen, onClose, onAddItem }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (itemName && amount) {
-      onAddItem({ name: itemName, amount: parseFloat(amount) });
+      onAddItem({ id: Date.now(), name: itemName, amount: parseFloat(amount) }); // Generate a unique id
       setItemName('');
       setAmount('');
       onClose();
@@ -121,12 +121,12 @@ const ManualInputModal = ({ isOpen, onClose, onAddItem }) => {
 const SplitPage = () => {
   const router = useRouter();
   const [items, setItems] = useState([
-    { name: 'Item 1', amount: 10 },
-    { name: 'Item 2', amount: 20 },
-    { name: 'Item 3', amount: 15 },
-    { name: 'Item 4', amount: 25 },
-    { name: 'Item 5', amount: 30 },
-    { name: 'Item 6', amount: 5 }
+    { id: 1, name: 'Item 1', amount: 10 },
+    { id: 2, name: 'Item 2', amount: 20 },
+    { id: 3, name: 'Item 3', amount: 15 },
+    { id: 4, name: 'Item 4', amount: 25 },
+    { id: 5, name: 'Item 5', amount: 30 },
+    { id: 6, name: 'Item 6', amount: 5 },
   ]);
 
   const [members, setMembers] = useState([
@@ -141,25 +141,27 @@ const SplitPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleDropItem = (item, member) => {
-    // Remove the dropped item from the item list if it's being moved from there
-    setItems((prevItems) => prevItems.filter((i) => i.name !== item.name));
-
-    // Add the item to the respective member's list or move it if it already exists
-    setMembers((prevMembers) =>
-      prevMembers.map((m) => {
+    setMembers((prevMembers) => {
+      const updatedMembers = prevMembers.map((m) => {
         if (m.id === member) {
-          // If the item is already assigned to this member, do nothing
-          if (m.items.some(i => i.name === item.name)) {
-            return m;
-          }
-          // Otherwise, add the item to this member's list
-          return { ...m, items: [...m.items, item] };
+          return { ...m, items: [...m.items, item] }; // Add to the new member
         } else {
-          // Check if the item belongs to this member; if yes, remove it
-          return { ...m, items: m.items.filter((i) => i.name !== item.name) };
+          return { ...m, items: m.items.filter(i => i.id !== item.id) }; // Remove from the other members
         }
-      })
-    );
+      });
+
+      return updatedMembers.map((m) => {
+        if (m.id === member) {
+          const uniqueItems = Array.from(new Set(m.items.map(i => i.id)))
+            .map(id => m.items.find(i => i.id === id));
+          return { ...m, items: uniqueItems };
+        }
+        return m;
+      });
+    });
+
+    // Remove the item from the items list if it's being moved from there
+    setItems((prevItems) => prevItems.filter((i) => i.id !== item.id));
   };
 
   const handleAddItem = (newItem) => {
@@ -167,14 +169,12 @@ const SplitPage = () => {
   };
 
   const handleDeleteItem = (memberId, itemToDelete) => {
-    // Confirm deletion
     const confirmDelete = window.confirm(`Are you sure you want to delete ${itemToDelete.name}?`);
     if (confirmDelete) {
-      // Remove the item from the assigned member's list
       setMembers((prevMembers) =>
         prevMembers.map((m) => {
           if (m.id === memberId) {
-            return { ...m, items: m.items.filter(i => i.name !== itemToDelete.name) };
+            return { ...m, items: m.items.filter(i => i.id !== itemToDelete.id) };
           }
           return m;
         })
@@ -208,11 +208,11 @@ const SplitPage = () => {
           <div className="drag-container grid grid-cols-1 gap-2">
             {items.map((item) => (
               <Item
-                key={item.name}
+                key={item.id}
+                id={item.id}
                 name={item.name}
                 amount={item.amount}
-                onDrop={handleDropItem}
-                onDelete={() => setItems((prev) => prev.filter(i => i.name !== item.name))}
+                onDelete={() => setItems((prev) => prev.filter(i => i.id !== item.id))}
               />
             ))}
           </div>
