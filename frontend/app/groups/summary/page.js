@@ -17,27 +17,28 @@ const GroupSummaryPage = () => {
           style={{
             display: "flex",
             flexDirection: "column",
+            padding: "20px",
           }}
         >
           <p className="content">Total:</p>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ textalign: "left" }}>User 1</span>
-            <span style={{ textalign: "right" }}>Owes you $5</span>
+            <span style={{ textAlign: "left" }}>BlueBird1</span>
+            <span style={{ textAlign: "right" }}>Owes you $5</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ textalign: "left" }}>User 2</span>
+            <span style={{ textalign: "left" }}>BlueBird2</span>
             <span style={{ textalign: "right" }}>You owe $5</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ textalign: "left" }}>User 3</span>
+            <span style={{ textalign: "left" }}>BlueBird3</span>
             <span style={{ textalign: "right" }}>Owes you $5</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ textalign: "left" }}>User 4</span>
+            <span style={{ textalign: "left" }}>BlueBird4</span>
             <span style={{ textalign: "right" }}>You owe $5</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ textalign: "left" }}>User 5</span>
+            <span style={{ textalign: "left" }}>BlueBird5</span>
             <span style={{ textalign: "right" }}>Owes you $5</span>
           </div>
         </div>
@@ -48,11 +49,12 @@ const GroupSummaryPage = () => {
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-around",
+            padding: "20px",
           }}
         >
           <p className="content">Total: (simplified)</p>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ textalign: "left" }}>User 5</span>
+            <span style={{ textalign: "left" }}>BlueBird 5</span>
             <span style={{ textalign: "right" }}>Owes you $5</span>
           </div>
           <button className="payment-button" onClick={handleRedirect}>
