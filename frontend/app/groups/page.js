@@ -1,7 +1,15 @@
+"use client";
+
 import React from "react";
 import "./style.css";
+import { useRouter } from "next/navigation";
 
 const GroupPage = () => {
+  const router = useRouter();
+
+  const handleRedirect = () => {
+    router.push("/groups/summary");
+  };
   return (
     <div className="group-page">
       <div className="left-box">
@@ -27,7 +35,9 @@ const GroupPage = () => {
           <p>BlueBird8 paid S$1 for bahkutteh</p>
           <p>BlueBird9 paid S$1 for bahkutteh</p>
         </div>
-        <button className="settle-up">Settle up!</button>
+        <button className="settle-up" onClick={handleRedirect}>
+          Settle up!
+        </button>
       </div>
       <div className="right-box">
         <p className="grouppage-font">Members:</p>

@@ -1,0 +1,39 @@
+.summary-page {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.content {
+  font-family: "Josefin Slab";
+  font-style: normal;
+  font-weight: 400;
+  font-size: px;
+  line-height: 18px;
+  color: #000000;
+}
+
+.box {
+  width: 40%;
+  /* Adjust this as needed */
+  height: 600px;
+  box-sizing: border-box;
+
+  background: rgba(240, 240, 240, 0.67);
+  border: 1px solid #000000;
+  border-radius: 15px;
+}
+.payment-button {
+  width: 150px;
+  padding: 10px;
+  margin: 0 auto; /* Center horizontally */
+  display: block;
+  background-color: #4caf50;
+  color: white;
+  text-align: center;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  align-content: end;
+}
