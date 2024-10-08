@@ -1,10 +1,14 @@
+import os
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from starlette.responses import HTMLResponse
 from starlette.templating import _TemplateResponse
-from src.group_service.router import router as groupRouter
+from src.expense_service.router import router as groupRouter
 
+load_dotenv()
 relative_path = "src/"
 
 ApiClient = FastAPI()
