@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 8
+names: ['Address', 'Date', 'Item', 'OrderId', 'Subtotal', 'Tax', 'Title', 'TotalPrice']
+
+roboflow:
+  workspace: receipts-77003
+  project: receipts-dy2wq
+  version: 5
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/receipts-77003/receipts-dy2wq/dataset/5
