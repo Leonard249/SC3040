@@ -1,0 +1,81 @@
+.box {
+  display: flex;
+  flex-direction: row;
+  width: 85%;
+  height: 743px;
+  box-sizing: border-box;
+  background: rgba(240, 240, 240, 0.67);
+  border: 1px solid #000000;
+  border-radius: 15px;
+  overflow: hidden; /* prevent overlap of boxes*/
+}
+
+.content {
+  font-family: "Josefin Slab";
+  font-weight: normal;
+  font-size: 24px;
+  margin-right: 10px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-grow: 1;
+  height: 100%;
+  padding: 10px;
+  background-color: #f4f4f4;
+}
+
+.user-name {
+  margin-bottom: 10px;
+}
+
+.draggable {
+  /* Auto layout */
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  gap: 8px;
+  margin: 5px;
+  color: #f4f4f4;
+  background: #2c2c2c;
+  border-radius: 8px;
+  position: relative;
+}
+
+.hover-options {
+  display: none; /* Hidden by default */
+  position: absolute; /* Position it on top of the item */
+  top: 100%; /* Position below the item */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Adjust to center */
+  background: white; /* Background for the options */
+  border-radius: 4px; /* Rounded corners */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Shadow for options */
+  padding: 5px; /* Padding */
+  z-index: 10; /* Make sure it's on top */
+}
+
+.draggable:hover .hover-options {
+  display: flex; /* Show options on hover */
+  flex-direction: column; /* Stack buttons vertically */
+  align-items: center; /* Center buttons */
+}
+
+.delete-button,
+.create-button {
+  background-color: #f44336; /* Delete button color */
+  color: white; /* Text color */
+  border: none; /* Remove border */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer; /* Pointer on hover */
+  padding: 5px; /* Padding */
+  margin: 2px; /* Margin between buttons */
+}
+
+.create-button {
+  background-color: #4caf50; /* Create button color */
+}
