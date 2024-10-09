@@ -8,10 +8,14 @@ from typing_extensions import Annotated
 PyObjectId = Annotated[str, BeforeValidator(str)]
 
 
+class User(BaseModel):
+    user_id: str
+
+
 class GroupModel(BaseModel):
     id: Optional[PyObjectId] = Field(default= None, alias="_id")
     name: str = Field(...)
-    users: List[str] = []
+    users: List[User] = []
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True,
