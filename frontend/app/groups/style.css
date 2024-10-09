@@ -1,6 +1,6 @@
 .group-page {
   display: flex;
-  justify-content: space-between;
+  /*justify-content: space-between;*/
   padding: 20px;
 }
 
