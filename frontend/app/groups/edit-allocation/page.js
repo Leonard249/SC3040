@@ -6,7 +6,7 @@ import "./style.css";
 const initialItems = ["Item 1", "Item 2", "Item 3"];
 const users = ["BlueBird1", "BlueBird2", "BlueBird3", "BlueBird4", "BlueBird5"];
 
-const GroupPaymentPage = () => {
+const EditAllocationPage = () => {
   const [hoveredItem, setHoveredItem] = useState(null);
 
   const [unassignedItems, setUnassignedItems] = useState(initialItems);
@@ -130,4 +130,4 @@ const GroupPaymentPage = () => {
   );
 };
 
-export default GroupPaymentPage;
+export default EditAllocationPage;
