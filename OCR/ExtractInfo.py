@@ -4,11 +4,13 @@ import os
 import glob
 
 # Initialize the model
-model = YOLO('OCR/Receipt.pt')
+model_path = os.path.join(os.path.dirname(__file__), 'Receipt.pt')  # Dynamic path for the model
+model = YOLO(model_path)
 
-# Define input and output directories
-input_dir = "OCR/Input"
-output_dir = "OCR/cropped_images"
+# Define input and output directories dynamically
+base_dir = os.path.dirname(__file__)  # Get the directory where the script is located
+input_dir = os.path.join(base_dir, 'Input')  # Dynamic path for the input directory
+output_dir = os.path.join(base_dir, 'cropped_images')  # Dynamic path for the output directory
 
 # Create output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)

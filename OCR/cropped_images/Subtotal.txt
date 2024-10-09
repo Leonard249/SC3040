@@ -1,2 +1,2 @@
 Class: Subtotal
-Confidence: 0.45
+Confidence: 0.78

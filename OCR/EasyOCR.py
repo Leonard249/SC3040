@@ -4,12 +4,14 @@ import easyocr
 import re
 import json
 
+
 # Initialize EasyOCR Reader
 reader = easyocr.Reader(['en'])
 
 # Load the cropped image
-image_path = 'OCR/cropped_images/Item.jpg'
-cropped_image = cv2.imread(image_path)
+base_dir = os.path.dirname(__file__)  # Get the directory where the script is located
+output_dir = os.path.join(base_dir, 'cropped_images','Item.jpg')
+cropped_image = cv2.imread(output_dir)
 
 # Convert the image to grayscale
 gray_image = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2GRAY)
@@ -17,7 +19,7 @@ gray_image = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2GRAY)
 result = reader.readtext(gray_image)
 
 # Print the OCR result
-print(f"OCR result for {os.path.basename(image_path)}:")
+print(f"OCR result for {os.path.basename(output_dir)}:")
 
 # Extract detected text from OCR result
 detected_texts = [text for _, text, _ in result]
