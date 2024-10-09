@@ -6,7 +6,7 @@ from typing import List
 class Item(BaseModel):
     name: str
     cost: str
-    users: List[str]
+    user_id: str
     settled: bool
 
 

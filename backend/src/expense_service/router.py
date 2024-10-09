@@ -46,7 +46,11 @@ async def get_expense(group_id: str):
         return {"message": "No Records Found"}
 
 
-# Edit Expense
-@router.put("/{group_id}", status_code=200)
-async def exit_expense(group_id: str):
-    pass
+# Get ALL Expense
+@router.get("/all/{user_id}", status_code=200)
+async def get_all_expenses(user_id: str):
+    all_expense_result = await expense_service.get_all_expense(user_id)
+    if all_expense_result:
+        return {"message": "Successfully Retrieve", "data": all_expense_result}
+    else:
+        return {"message": "No Records Found"}
