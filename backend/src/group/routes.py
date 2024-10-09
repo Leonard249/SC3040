@@ -4,8 +4,8 @@ from typing import List
 import uuid
 from bson import ObjectId
 from fastapi import APIRouter
-from backend.src.models.groups import GroupModel
-from backend.src.config.database import group_collection
+from src.group.model import GroupModel
+from src.group.database import group_collection
 
 
 router = APIRouter()
@@ -38,7 +38,7 @@ async def create_group(group: GroupModel = Body(...)):
         response_model=GroupModel,
         response_model_by_alias=False)
 
-async def add_user_to_group(group_id: str, user: int):
+async def add_user_to_group(group_id: str, user: str):
     group = await group_collection.find_one({"_id": ObjectId(group_id)})
     if not group:
         raise HTTPException(status_code=404, detail="Group not found.")
@@ -56,7 +56,7 @@ async def add_user_to_group(group_id: str, user: int):
         response_model=GroupModel,
          )
 
-async def remove_user_from_group(group_id: str, user: int):
+async def remove_user_from_group(group_id: str, user: str):
     group = await group_collection.find_one({"_id": ObjectId(group_id)})
     if not group:
         raise HTTPException(status_code=404, detail="Group not found.")

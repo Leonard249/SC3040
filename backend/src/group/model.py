@@ -11,7 +11,7 @@ PyObjectId = Annotated[str, BeforeValidator(str)]
 class GroupModel(BaseModel):
     id: Optional[PyObjectId] = Field(default= None, alias="_id")
     name: str = Field(...)
-    users: List[int] = []
+    users: List[str] = []
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True,
