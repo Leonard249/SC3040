@@ -14,6 +14,7 @@ ROUTE_PREFIX = "/" + os.getenv("EXPENSE_SERVICE_VERSION") + "/groups"
 router = APIRouter(prefix=ROUTE_PREFIX, tags=["group-service"])
 
 
+# Go to sample.json to see example request body
 @router.post(
     "/",
     response_description="Add new group",
