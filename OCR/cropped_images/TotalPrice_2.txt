@@ -1,2 +1,0 @@
-Class: TotalPrice
-Confidence: 0.85
