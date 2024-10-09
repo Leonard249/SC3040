@@ -12,5 +12,8 @@ pytest-html~=4.1.1
 mypy~=1.9.0
 tox~=4.14.0
 
-pymongo~=4.10.1
-motor
+pymongo
+motor~=3.1.1  
+passlib~=1.7.4  
+python-jose~=3.3.0  
+
