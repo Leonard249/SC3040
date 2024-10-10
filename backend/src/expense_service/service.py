@@ -69,21 +69,27 @@ class ExpenseService:
         expense_cursor = self.expense_collection.find({'group_id': {'$in': group_ids}})
         expenses = await expense_cursor.to_list(length=None)
 
-        # Map user IDs to their expenses
-        user_expense_map = {str(user['_id']): [] for user in matching_users}
-        for expense in expenses:
-            user_id_str = str(expense['user_id'])
-            paid_by_user = await user_collection.find_one({"_id": expense['paid_by']})
-            paid_by_username = paid_by_user.get("username", "Unknown") if paid_by_user else "Unknown"
+        # Map expenses to groups and users
+        group_expense_map = {str(group['_id']): {} for group in groups}
 
-            # Append the item information to the respective user entry
-            if user_id_str in user_expense_map:
-                user_expense_map[user_id_str].append({
-                    "id": str(expense['_id']),
-                    "item": expense.get('item'),
-                    "amount": expense.get('amount'),
-                    "paid_by": paid_by_username
-                })
+        for expense in expenses:
+            group_id_str = str(expense['group_id'])
+            user_id_str = str(expense['user_id'])
+
+            # Create a nested structure if not already present
+            if group_id_str not in group_expense_map:
+                group_expense_map[group_id_str] = {}
+
+            if user_id_str not in group_expense_map[group_id_str]:
+                group_expense_map[group_id_str][user_id_str] = []
+
+            # Append the item information to the respective group and user entry
+            group_expense_map[group_id_str][user_id_str].append({
+                "id": str(expense['_id']),
+                "item": expense.get('item'),
+                "amount": expense.get('amount'),
+                "paid_by": str(expense.get('paid_by'))
+            })
 
         # Construct the final structure with group details
         final_structure = {
@@ -108,11 +114,14 @@ class ExpenseService:
                 if user_details:
                     member_name = user_details.get('username', 'Default')
 
-                    # Create user entry with expenses
+                    # Filter items that belong to this user and group using `group_expense_map`
+                    user_items = group_expense_map.get(group_id_str, {}).get(user_id_str, [])
+
+                    # Create user entry with filtered expenses
                     user_entry = {
                         "user_id": user_id_str,
                         "memberName": member_name,
-                        "items": user_expense_map.get(user_id_str, [])
+                        "items": user_items
                     }
 
                     group_details["users"].append(user_entry)

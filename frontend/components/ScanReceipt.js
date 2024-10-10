@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { GROUP_USER_ITEM } from '../lib/constant';
+import apiClient from "@/app/axios";
 
 const ScanReceipt = () => {
     const [dragging, setDragging] = useState(false);
@@ -19,17 +20,28 @@ const ScanReceipt = () => {
         setUserId(queryUserId);
   
         // Fetch groups that the user belongs to from GROUP_USER_ITEM
-        const userGroups = GROUP_USER_ITEM.data.groups.filter(group => 
-            group.users.some(user => user.user_id === queryUserId)
-        ).map(group => ({
-            groupId: group.group_id,
-            groupName: group.users.map(user => user.memberName).join(', ') // Combine member names
-        }));
+        const fetchData = async () => {
+            try {
+                let responseData = await apiClient.get(`/v1/expense/all/${queryUserId}`);
+                console.log(responseData)
+                const userGroups = responseData.data.data.groups.filter(group =>
+                    group.users.some(user => user.user_id === queryUserId)
+                ).map(group => ({
+                    groupId: group.group_id,
+                    groupName: group.users.map(user => user.memberName).join(', ') // Combine member names
+                }));
 
-        // Log userId and fetched groups for debugging
-        console.log('User ID:', queryUserId, 'Groups fetched:', userGroups);
+                // Log userId and fetched groups for debugging
+                console.log('User ID:', queryUserId, 'Groups fetched:', userGroups);
+
+                setGroups(userGroups);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData(); // Call the async function inside useEffect
       
-        setGroups(userGroups);
     }, [userId]); // Ensure userId is a dependency
 
     const handleDrop = (e) => {
