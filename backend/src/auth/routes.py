@@ -1,14 +1,18 @@
 import os
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
 from src.auth.schemas import UserCreate, UserLogin, PasswordResetConfirm, PasswordResetRequest
 from src.auth.utils import get_password_hash, verify_password, create_access_token
-from src.auth.database import get_user_by_email, create_user, send_reset_email, update_user_password, is_token_blacklisted
+from src.auth.database import get_user_by_email, create_user, send_reset_email, update_user_password, is_token_blacklisted, blacklist_token
 
 ROUTE_PREFIX = "/" + os.getenv("EXPENSE_SERVICE_VERSION") + "/auth"
 router = APIRouter(prefix=ROUTE_PREFIX, tags=["auth-service"])
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = "HS256"
 
 @router.post("/register")
 async def register(user: UserCreate):
@@ -29,9 +33,17 @@ async def login(user: UserLogin):
 
 @router.post("/logout")
 async def logout(token: str = Depends(oauth2_scheme)):
-    if is_token_blacklisted(token):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked")
-    return {"message": "Logged out successfully"}
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if email is None or is_token_blacklisted(token):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or blacklisted token")
+        
+        # Blacklist the token
+        await blacklist_token(token)
+        return {"message": "Logged out successfully"}
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
 @router.post("/forgetpassword")
 async def forgetpassword(request: PasswordResetRequest):
