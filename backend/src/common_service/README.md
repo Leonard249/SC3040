@@ -1,0 +1,29 @@
+GET ALL USERS
+
+GET
+```v1/common/users```
+```
+[
+[
+  {
+    "_id": "6706087b1143dcab37a70f34",
+    "email": "user@example.com",
+    "username": "example"
+  },
+  {
+    "_id": "6706087b1143dcab37a70f35",
+    "email": "user3@example.com",
+    "username": "example1"
+  },
+  {
+    "_id": "6706087b1143dcab37a70f36",
+    "email": "user2@example.com",
+    "username": "example2"
+  },
+  {
+    "_id": "6706087b1143dcab37a70f37",
+    "email": "user1@example.com",
+    "username": "example3"
+  }
+]
+```

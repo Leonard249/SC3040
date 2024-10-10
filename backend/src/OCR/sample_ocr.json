@@ -1,0 +1,13 @@
+{
+  "message": "Successfully Retrieve",
+  "data": [
+    {
+      "item": "POKKA  HOUJIChA NO SU",
+      "price": 1.75
+    },
+    {
+      "item": "CAVENDISH BANANA",
+      "price": 2.6
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "message": "Successfully Retrieve",
+  "data": {
+    "groups": [
+      {
+        "group_id": "6703f81b87a2a0c2808251a5",
+        "users": [
+          {
+            "user_id": "6706087b1143dcab37a70f34",
+            "memberName": "example",
+            "items": [
+              {
+                "id": "67053dd0cb8d604f40a8f0c4",
+                "item": "example",
+                "amount": 1.2,
+                "paid_by": "example1"
+              },
+              {
+                "id": "67053dd0cb8d604f40a8f0c5",
+                "item": "example",
+                "amount": 2.2,
+                "paid_by": "example1"
+              },
+              {
+                "id": "67053dd0cb8d604f40a8f0c6",
+                "item": "example",
+                "amount": 3.2,
+                "paid_by": "example1"
+              }
+            ]
+          },
+          {
+            "user_id": "6706087b1143dcab37a70f35",
+            "memberName": "example1",
+            "items": []
+          },
+          {
+            "user_id": "6706087b1143dcab37a70f36",
+            "memberName": "example2",
+            "items": []
+          }
+        ]
+      }
+    ]
+  }
+}
