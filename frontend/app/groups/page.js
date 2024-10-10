@@ -4,7 +4,8 @@ import React, { useEffect, useState } from "react";
 import "./style.css";
 import { useRouter } from "next/navigation";
 import AddMember from "@/app/groups/createGroup";
-import { GROUP_USER_ITEM } from "../../lib/constant"; // Import the GROUP_USER_ITEM constant
+import apiClient from "@/app/axios";
+
 
 const GroupPage = () => {
   const userId = "6706087b1143dcab37a70f34"; // Assume this is current user
@@ -26,39 +27,42 @@ const GroupPage = () => {
   };
 
   useEffect(() => {
-    // Retrieve the selected group from local storage on component mount
-    const storedGroupId = localStorage.getItem("selectedGroup");
-    if (storedGroupId) {
-      setSelectedGroup(storedGroupId);
-    }
+    const fetchData = async () => {
+      try {
+        let responseData = await apiClient.get(`/v1/expense/all/${userId}`);
+        const data = responseData.data.data.groups;
+        setGroups(data);
 
-    const data = GROUP_USER_ITEM.data.groups;
-    setGroups(data);
+        let foundUser = false;
+        data.forEach((group) => {
+          group.users.forEach((member) => {
+            if (member.user_id === userId.toString()) {
+              setUserName(member.memberName);
+              foundUser = true;
+            }
+          });
+        });
 
-    let foundUser = false;
-    data.forEach((group) => {
-      group.users.forEach((member) => {
-        if (member.user_id === userId.toString()) {
-          setUserName(member.memberName);
-          foundUser = true;
+        data.forEach((group) => {
+          group.users.forEach((user) => {
+            saveUserMapping(user.user_id, user.memberName);
+          });
+        });
+
+        if (!foundUser) {
+          console.warn("User not found");
         }
-      });
-    });
 
-    GROUP_USER_ITEM.data.groups.forEach((group) => {
-      group.users.forEach((user) => {
-        saveUserMapping(user.user_id, user.memberName);
-      });
-    });
+        // Optionally set a default group if none is selected
+        if (data.length > 0 && !storedGroupId) {
+          setSelectedGroup(data[0].group_id); // Set default selected group after fetching
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
 
-    if (!foundUser) {
-      console.warn("User not found");
-    }
-
-    // Optionally set a default group if none is selected
-    if (data.length > 0 && !storedGroupId) {
-      setSelectedGroup(data[0].group_id); // Set default selected group after fetching
-    }
+    fetchData(); // Call the async function inside useEffect
   }, []); // Run only once on mount
 
   const handleRedirect = (path) => {

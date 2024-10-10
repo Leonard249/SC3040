@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import "./style.css";
-import { GROUP_USER_ITEM } from "../../../lib/constant"; // Import the GROUP_USER_ITEM constant
+import apiClient from "@/app/axios"; // Import the GROUP_USER_ITEM constant
 
 const GroupSummaryPage = () => {
-  const userId = "6706087b1143dcab37a70f34"; // Assume this is current user
+  const userId = "6706087b1143dcab37a70f35"; // Assume this is current user
 
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [groups, setGroups] = useState([]);
@@ -14,6 +14,26 @@ const GroupSummaryPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
 
   useEffect(() => {
+
+    const updateGroups = async () => {
+      let responseData = await apiClient.get(`/v1/expense/all/${userId}`);
+      const data = responseData.data.data.groups;
+      setGroups(data);  // This updates the state, but won't immediately reflect in `groups`
+    };
+
+    updateGroups(); // Call the async function inside useEffect
+  }, []); // Run only once on mount
+
+  // This effect will run whenever the `groups` state is updated
+  useEffect(() => {
+    groups.forEach((group) => {
+      group.users.forEach((member) => {
+        if (member.user_id === userId.toString()) {
+          setUserName(member.memberName);
+        }
+      });
+    });
+
     // Retrieve the selected group from local storage on component mount
     const storedGroupId = localStorage.getItem("selectedGroup");
     if (storedGroupId) {
@@ -21,22 +41,14 @@ const GroupSummaryPage = () => {
       calculateOwedAmounts(storedGroupId); // Calculate amounts when group is selected
     }
 
-    const data = GROUP_USER_ITEM.data.groups;
-    setGroups(data);
-
-    data.forEach((group) => {
-      group.users.forEach((member) => {
-        if (member.user_id === userId.toString()) {
-          setUserName(member.memberName);
-        }
-      });
-    });
-  }, []); // Run only once on mount
+  }, [groups]); // Dependency array with `groups` ensures it runs when `groups` changes
 
   const calculateOwedAmounts = (groupId) => {
-    const group = GROUP_USER_ITEM.data.groups.find(
+
+    const group = groups.find(
       (g) => g.group_id === groupId
     );
+
     if (!group) return {};
 
     const owedAmounts = {};
@@ -46,6 +58,9 @@ const GroupSummaryPage = () => {
 
     group.users.forEach((user) => {
       user.items.forEach((item) => {
+        if (item === []) {
+          return
+        }
         const payerName = group.users.find(
           (u) => u.user_id === item.paid_by
         )?.memberName;
@@ -56,7 +71,15 @@ const GroupSummaryPage = () => {
       });
     });
 
-    setOwedAmounts(owedAmounts); // Save calculated amounts in state
+    const filteredData = Object.entries(owedAmounts)
+        .filter(([key, value]) => value !== 0) // Keep only entries with value not equal to 0
+        .reduce((obj, [key, value]) => {
+          obj[key] = value;
+          return obj;
+        }, {});
+
+
+    setOwedAmounts(filteredData); // Save calculated amounts in state
   };
 
   const handlePaymentClick = (memberName) => {
