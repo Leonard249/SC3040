@@ -15,7 +15,7 @@ relative_path = "src/"
 
 ApiClient = FastAPI()
 ApiClient.include_router(groupRouter)
-ApiClient.include_router(createGroupRouter)  # Include the auth router
+ApiClient.include_router(createGroupRouter)  
 ApiClient.include_router(commonRouter)
 ApiClient.include_router(ocrRouter)
 ApiClient.include_router(authRouter)

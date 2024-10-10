@@ -1,15 +1,14 @@
 import os
-
-from fastapi import APIRouter, Depends, HTTPException
-from src.auth.schemas import UserCreate, UserLogin
-from src.auth.models import User
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from src.auth.schemas import UserCreate, UserLogin, PasswordResetConfirm, PasswordResetRequest
 from src.auth.utils import get_password_hash, verify_password, create_access_token
-from src.auth.database import get_user_by_email, create_user
+from src.auth.database import get_user_by_email, create_user, send_reset_email, update_user_password, is_token_blacklisted
 
 ROUTE_PREFIX = "/" + os.getenv("EXPENSE_SERVICE_VERSION") + "/auth"
-
 router = APIRouter(prefix=ROUTE_PREFIX, tags=["auth-service"])
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @router.post("/register")
 async def register(user: UserCreate):
@@ -20,7 +19,6 @@ async def register(user: UserCreate):
     user_id = await create_user(user.email, hashed_password)
     return {"message": "User registered successfully", "user_id": str(user_id)}
 
-
 @router.post("/login")
 async def login(user: UserLogin):
     db_user = await get_user_by_email(user.email)
@@ -29,7 +27,32 @@ async def login(user: UserLogin):
     access_token = create_access_token({"sub": db_user["email"]})
     return {"access_token": access_token, "token_type": "bearer", "user_id": str(db_user["_id"])}
 
-
 @router.post("/logout")
-async def logout():
+async def logout(token: str = Depends(oauth2_scheme)):
+    if is_token_blacklisted(token):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked")
     return {"message": "Logged out successfully"}
+
+@router.post("/forgetpassword")
+async def forgetpassword(request: PasswordResetRequest):
+    user = await get_user_by_email(request.email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    reset_token = create_access_token({"sub": user["email"]})
+    await send_reset_email(user["_id"], reset_token)
+    return {"message": "Password reset email sent"}
+
+@router.post("/resetpassword")
+async def resetpassword(confirm: PasswordResetConfirm):
+    try:
+        payload = jwt.decode(confirm.token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if email is None or email != confirm.email:
+            raise HTTPException(status_code=400, detail="Invalid token")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=400, detail="Token expired")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=400, detail="Invalid token")
+    hashed_password = get_password_hash(confirm.new_password)
+    await update_user_password(confirm.email, hashed_password)
+    return {"message": "Password successfully changed"}
