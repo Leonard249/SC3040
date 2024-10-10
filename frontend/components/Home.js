@@ -145,7 +145,7 @@ const handleAddGroup = async () => {
             return response.data.group_name;
         } catch (error) {
             console.error('Error fetching group name:', error);
-            return null; // Return null in case of an error
+            return "No Group Name"; // Return default in case of an error
         }
         };
 
