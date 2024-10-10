@@ -12,6 +12,8 @@ from src.auth.routes import router as authRouter
 
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.get_function.routes import router as getRouter
+
 load_dotenv()
 relative_path = "src/"
 
@@ -21,6 +23,7 @@ ApiClient.include_router(createGroupRouter)  # Include the auth router
 ApiClient.include_router(commonRouter)
 ApiClient.include_router(ocrRouter)
 ApiClient.include_router(authRouter)
+ApiClient.include_router(getRouter)
 
 ApiClient.add_middleware(
     CORSMiddleware,
