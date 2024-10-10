@@ -119,3 +119,68 @@
 .add-member-button:focus {
   outline: none;
 }
+
+/* Styling for the Add Member button */
+.add-member-button {
+  font-size: 18px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+/* Styling for the popup overlay */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Styling for the popup content */
+.popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  text-align: center;
+}
+
+/* Styling for the email input field */
+.popup-content input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+/* Styling for the filtered user list */
+.filtered-user-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.filtered-user-list li {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Styling for the close popup button */
+.close-popup-button {
+  background: #f44336;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.close-popup-button:hover {
+  background: #d32f2f;
+}
+
