@@ -23,18 +23,26 @@ const ScanReceipt = () => {
         const fetchData = async () => {
             try {
                 let responseData = await apiClient.get(`/v1/expense/all/${queryUserId}`);
-                console.log(responseData)
+                console.log(responseData);
                 const userGroups = responseData.data.data.groups.filter(group =>
                     group.users.some(user => user.user_id === queryUserId)
-                ).map(group => ({
-                    groupId: group.group_id,
-                    groupName: group.users.map(user => user.memberName).join(', ') // Combine member names
-                }));
-
+               );
+                setGroups(userGroups);
+                
+                const groupsWithNames = await Promise.all(
+                    userGroups.map(async (group) => {
+                        console.log('Fetching group name for groupId:', group.group_id); // Debugging log
+                        const groupName = await getGroupName(group.group_id); // Fetch group name
+                        return {
+                            ...group,
+                            group_name: groupName // Add group name to group object
+                        };
+                    })
+                );
                 // Log userId and fetched groups for debugging
                 console.log('User ID:', queryUserId, 'Groups fetched:', userGroups);
 
-                setGroups(userGroups);
+                setGroups(groupsWithNames);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -64,6 +72,15 @@ const ScanReceipt = () => {
       }
   };
 
+  const getGroupName = async (groupId) => {
+    try {
+        const response = await apiClient.get(`/v1/get/get-group-name/${groupId}`);
+        return response.data.group_name;
+    } catch (error) {
+        console.error('Error fetching group name:', error);
+        return "No Group Name"; // Return default in case of an error
+    }
+    };
     const convertImageToBase64 = (file, callback) => {
         const reader = new FileReader();
 
@@ -118,7 +135,7 @@ const ScanReceipt = () => {
                     <option value="" disabled>Select Group</option>
                     {groups.map(group => (
                         <option key={group.groupId} value={group.groupId}>
-                            {group.groupId}
+                            {group.group_name}
                         </option>
                     ))}
                 </select>
