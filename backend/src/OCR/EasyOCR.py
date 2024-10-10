@@ -2,16 +2,20 @@ import cv2
 import os
 import easyocr
 import re
-import json
+
+from .ExtractInfo import OCRModel
 
 
 class EasyOCRReader:
     def __init__(self):
         self.reader = easyocr.Reader(['en'])
+        self.model = OCRModel()
 
     def get_output(self, encoded_image):
         # Initialize EasyOCR Reader
         # Load the cropped image
+        self.model.initialiseModel(encoded_image)
+
         base_dir = os.path.dirname(__file__)  # Get the directory where the script is located
         output_dir = os.path.join(base_dir, 'cropped_images', 'Item.jpg')
         cropped_image = cv2.imread(output_dir)
