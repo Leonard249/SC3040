@@ -6,6 +6,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import { AiOutlineDelete } from 'react-icons/ai'; // Import the delete icon
 import { useSearchParams } from 'next/navigation';
 import apiClient from "@/app/axios";
+import Image from "next/image";
 
 // Constants
 const ITEM_TYPE = 'ITEM';
@@ -344,8 +345,13 @@ const SplitPage = () => {
           {/* Receipt Section */}
           <div className="receipt-section p-6 border">
             <h2 className="text-xl font-semibold mb-4">The receipt you provided</h2>
-            <img src={image} alt="Receipt" className="mb-4" />
-  
+            <Image
+                src={image}
+                alt="Receipt"
+                width={256} // Restrict width to 256px (you can adjust as needed)
+                height={256} // Restrict height to 256px (adjust as needed)
+                className="mb-4 object-cover" // Apply additional Tailwind CSS classes for styling
+            />
             {/* Buttons Wrapper with Flexbox */}
             <div className="flex gap-4 mb-4"> {/* Added flex and gap for spacing */}
               <button onClick={handleRescan} className="bg-red-500 text-white py-3 px-6 rounded">

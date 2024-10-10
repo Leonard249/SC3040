@@ -16,6 +16,7 @@ const ScanReceipt = () => {
     // Fetch user's groups when the component mounts or userId changes
     useEffect(() => {
         // Set userId based on query parameter or default value
+        //TODO: USERID
         const queryUserId = new URLSearchParams(window.location.search).get('userId') || "6706087b1143dcab37a70f34"; // Change to valid user ID
         setUserId(queryUserId);
   
@@ -52,25 +53,27 @@ const ScanReceipt = () => {
       
     }, [userId]); // Ensure userId is a dependency
 
-    const handleDrop = (e) => {
-      e.preventDefault();
-      setDragging(false);
-      const droppedFile = e.dataTransfer.files[0];
-      setFile(droppedFile);
-  
-      // Check if a group is selected
-      if (!selectedGroup) {
-          alert('Please select a group before uploading.'); // Pop-out message
-          window.location.reload(); // Refresh the page
-          return; // Prevent routing
-      }
-  
-      // Proceed to navigate if both a file and a group are selected
-      if (droppedFile) {
-          // Navigate to the next page if the group is selected, passing the selected group ID
-          router.push(`/split-page?groupId=${selectedGroup}`);
-      }
-  };
+    const handleDrop = async (e) => {
+        e.preventDefault();
+        setDragging(false);
+        const droppedFile = e.dataTransfer.files[0];
+        setFile(droppedFile);
+
+        // Check if a group is selected
+        if (!selectedGroup) {
+            alert('Please select a group before uploading.'); // Pop-out message
+            window.location.reload(); // Refresh the page
+            return; // Prevent routing
+        }
+
+        // Proceed to navigate if both a file and a group are selected
+        if (droppedFile) {
+            // Navigate to the next page if the group is selected, passing the selected group ID
+            const groupId = await apiClient.get(`/v1/get/get-group-id/${selectedGroup}`);
+            console.log(groupId);
+            router.push(`/split-page?groupId=${groupId.data}`);
+        }
+    };
 
   const getGroupName = async (groupId) => {
     try {
@@ -108,11 +111,13 @@ const ScanReceipt = () => {
       // Proceed to navigate if both a file and a group are selected
       if (file) {
           console.log("doing")
-          convertImageToBase64(file, (base64String) => {
+          convertImageToBase64(file, async (base64String) => {
               console.log('Base64 Encoded Image:', base64String);
               // Now you can use this base64String for further processing
               localStorage.setItem('base64File', base64String); // Store in localStorage
-              router.push(`/split-page?groupId=${selectedGroup}`);
+              const groupId = await apiClient.get(`/v1/get/get-group-id/${selectedGroup}`);
+              console.log(groupId);
+              router.push(`/split-page?groupId=${groupId.data.group_id}`);
           });
           // Navigate to the next page if the group is selected, passing the selected group ID
       }

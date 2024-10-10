@@ -8,6 +8,7 @@ import apiClient from "@/app/axios";
 
 
 const GroupPage = () => {
+  //TODO: USERID
   const userId = "6706087b1143dcab37a70f34"; // Assume this is current user
   const router = useRouter();
   const [selectedGroup, setSelectedGroup] = useState(""); // Initialize selectedGroup with an empty string

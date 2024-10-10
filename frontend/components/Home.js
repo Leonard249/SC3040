@@ -5,6 +5,7 @@ import axios from "axios";
 import apiClient from "@/app/axios"; // Import the GROUP_USER_ITEM and ALL_USERS constants
 
 const Home = () => {
+    //TODO: USERID
     const userId = "6706087b1143dcab37a70f34"; // Assuming the current user has account_id 101
     const [groups, setGroups] = useState([]);
     const [totalOwed, setTotalOwed] = useState({});

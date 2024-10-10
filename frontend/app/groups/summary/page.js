@@ -5,6 +5,7 @@ import "./style.css";
 import apiClient from "@/app/axios"; // Import the GROUP_USER_ITEM constant
 
 const GroupSummaryPage = () => {
+  //TODO: USERID
   const userId = "6706087b1143dcab37a70f35"; // Assume this is current user
 
   const [selectedGroup, setSelectedGroup] = useState(null);
