@@ -1,7 +1,7 @@
 "use client"; // Ensure this is a client component
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { GROUP_USER_ITEM } from '../lib/constant'; // Adjust the import path if necessary
+import { GROUP_USER_ITEM } from '../lib/constant';
 
 const ScanReceipt = () => {
     const [dragging, setDragging] = useState(false);
@@ -51,62 +51,47 @@ const ScanReceipt = () => {
           router.push(`/split-page?groupId=${selectedGroup}`);
       }
   };
+
+    const convertImageToBase64 = (file, callback) => {
+        const reader = new FileReader();
+
+        // Define the onload event for the FileReader
+        reader.onloadend = () => {
+            // reader.result will contain the base64 encoded string
+            callback(reader.result);
+        };
+
+        // Read the file as a data URL (Base64 encoded string)
+        reader.readAsDataURL(file);
+    };
   
   const handleFileChange = (e) => {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
-  
+
       // Check if a group is selected
       if (!selectedGroup) {
           alert('Please select a group before uploading.'); // Pop-out message
           window.location.reload(); // Refresh the page
           return; // Prevent routing
       }
-  
+
       // Proceed to navigate if both a file and a group are selected
-      if (selectedFile) {
+      if (file) {
+          console.log("doing")
+          convertImageToBase64(file, (base64String) => {
+              console.log('Base64 Encoded Image:', base64String);
+              // Now you can use this base64String for further processing
+              localStorage.setItem('base64File', base64String); // Store in localStorage
+              router.push(`/split-page?groupId=${selectedGroup}`);
+          });
           // Navigate to the next page if the group is selected, passing the selected group ID
-          router.push(`/split-page?groupId=${selectedGroup}`);
       }
   };
   
 
     const handleClick = () => {
         fileInputRef.current.click(); // Trigger the file input when the area is clicked
-    };
-
-    const encodeImageToBase64 = (file) => {
-        const reader = new FileReader();
-        reader.onloadend = async () => {
-            const base64data = reader.result; // This is the Base64 encoded string
-
-            // Send the Base64 encoded image to your backend
-            try {
-                const response = await fetch('/api/upload', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        groupId: selectedGroup,
-                        userId,
-                        image: base64data,
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-                console.log('Upload success:', data);
-                // Redirect to the next page after successful upload
-                router.push(`/split-page?groupId=${selectedGroup}`);
-            } catch (error) {
-                console.error('Error uploading image:', error);
-            }
-        };
-
-        reader.readAsDataURL(file); // This starts the encoding process
     };
 
     return (

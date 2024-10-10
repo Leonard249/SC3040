@@ -1,10 +1,11 @@
 "use client";
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { useRouter } from 'next/navigation';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { AiOutlineDelete } from 'react-icons/ai'; // Import the delete icon
 import { useSearchParams } from 'next/navigation';
+import apiClient from "@/app/axios";
 
 // Constants
 const ITEM_TYPE = 'ITEM';
@@ -160,29 +161,81 @@ const SplitPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams(); 
   const groupId = searchParams.get('groupId'); 
-  const [items, setItems] = useState([
-    { id: 1, name: 'Item 1', amount: 10, assignedCount: 0 },
-    { id: 2, name: 'Item 2', amount: 20, assignedCount: 0 },
-    { id: 3, name: 'Item 3', amount: 15, assignedCount: 0 },
-    { id: 4, name: 'Item 4', amount: 25, assignedCount: 0 },
-    { id: 5, name: 'Item 5', amount: 30, assignedCount: 0 },
-    { id: 6, name: 'Item 6', amount: 5, assignedCount: 0 },
-  ]);
+  const [items, setItems] = useState([]);
 
-  const [members, setMembers] = useState([
-    { id: 1, items: [] },
-    { id: 2, items: [] },
-    { id: 3, items: [] },
-    { id: 4, items: [] },
-    { id: 5, items: [] },
-    { id: 6, items: [] },
-  ]);
+  const [members, setMembers] = useState([]);
+
+  const [image, setImage] = useState('');
+
+  const convertDataURIToPlainText = (dataURI) => {
+    // Check if the dataURI is valid and includes base64 encoding
+    if (dataURI.includes('base64,')) {
+      // Split the dataURI at 'base64,' and return only the base64 string part
+      return dataURI.split('base64,')[1];
+    }
+    // If the dataURI does not contain 'base64,', return it unchanged or handle error
+    return '';
+  };
+
+
+  useEffect(() => {
+    const base64data = localStorage.getItem('base64File');
+    setImage(base64data);
+
+    // Function to handle OCR scan
+    const ocrScan = () => {
+      return apiClient.post('/v1/ocr/scan', {
+        image: convertDataURIToPlainText(base64data),
+      });
+    };
+
+    // Function to fetch group members
+    const fetchMembers = () => {
+      //TODO: convert groupId
+      let groupId = "670761b7f7d1a0abedfdb6e8"
+      return apiClient.get(`/v1/groups/get_user/${groupId}`);
+    };
+
+    // Execute both API requests in parallel using Promise.all
+    Promise.all([ocrScan(), fetchMembers()])
+        .then(([ocrResponse, membersResponse]) => {
+          // Handle OCR Scan response
+          if (ocrResponse.status === 200) {
+            const formattedItems = ocrResponse.data.data.map((item, index) => ({
+              id: index + 1,
+              name: item.item,
+              amount: item.price,
+              assignedCount: 0,
+            }));
+            setItems(formattedItems);
+            alert('OCR Scan Successful');
+          } else {
+            alert('OCR Scan Failed');
+          }
+
+          // Handle Members response
+          if (Array.isArray(membersResponse.data.data)) {
+            const formattedMembers = membersResponse.data.data.map((member) => ({
+              id: member._id,
+              username: member.username,
+              items: [],
+            }));
+            setMembers(formattedMembers);
+          } else {
+            console.error("membersResponse.data is not an array:", membersResponse.data);
+          }
+        })
+        .catch((error) => {
+          console.error('Error occurred during API requests:', error);
+        });
+  }, [groupId]);
 
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleDropItem = (item, member) => {
     setMembers((prevMembers) =>
       prevMembers.map((m) => {
+        console.log(m)
         if (m.id === member) {
           const existingItem = m.items.find(i => i.id === item.id);
           if (!existingItem) {
@@ -274,7 +327,7 @@ const SplitPage = () => {
           {/* Receipt Section */}
           <div className="receipt-section p-6 border">
             <h2 className="text-xl font-semibold mb-4">The receipt you provided</h2>
-            <img src="/path/to/receipt-image" alt="Receipt" className="mb-4" />
+            <img src={image} alt="Receipt" className="mb-4" />
   
             {/* Buttons Wrapper with Flexbox */}
             <div className="flex gap-4 mb-4"> {/* Added flex and gap for spacing */}

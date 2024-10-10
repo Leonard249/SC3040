@@ -24,7 +24,7 @@ ApiClient.include_router(authRouter)
 
 ApiClient.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # List of allowed origins
+    allow_origins=["http://localhost:3000", "*"],  # List of allowed origins
     allow_credentials=True,
     allow_methods=["*"],  # Allows all HTTP methods
     allow_headers=["*"],  # Allows all headers
