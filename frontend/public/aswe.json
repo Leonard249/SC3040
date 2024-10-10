@@ -1,0 +1,122 @@
+{
+  "201": {
+    "group_name": "Group1",
+    "members": {
+      "member1": {
+        "account_id": 101,
+        "memberName": "Alice",
+        "items": [
+          {"id": 12, "item": "Item A", "amount": 15.32, "paid_by": 102},
+          {"id": 27, "item": "Item B", "amount": 30.56, "paid_by": 103},
+          {"id": 45, "item": "Item C", "amount": 7.89, "paid_by": 101}
+        ]
+      },
+      "member2": {
+        "account_id": 102,
+        "memberName": "Bob",
+        "items": [
+          {"id": 18, "item": "Item D", "amount": 19.67, "paid_by": 103},
+          {"id": 32, "item": "Item A", "amount": 50.12, "paid_by": 102}
+        ]
+      },
+      "member3": {
+        "account_id": 103,
+        "memberName": "Charlie",
+        "items": [
+          {"id": 22, "item": "Item C", "amount": 14.25, "paid_by": 101},
+          {"id": 37, "item": "Item G", "amount": 23.14, "paid_by": 103}
+        ]
+      }
+    }
+  },
+  
+  "202": { 
+    "group_name": "Group2",  
+    "members": {
+      "member1": {
+        "account_id": 102,
+        "memberName": "Bob",
+        "items": [
+          {"id": 49, "item": "Item B", "amount": 28.50, "paid_by": 104},
+          {"id": 61, "item": "Item F", "amount": 12.75, "paid_by": 105}
+        ]
+      },
+      "member2": {
+        "account_id": 104,
+        "memberName": "David",
+        "items": [
+          {"id": 53, "item": "Item E", "amount": 62.50, "paid_by": 102},
+          {"id": 67, "item": "Item D", "amount": 11.40, "paid_by": 104}
+        ]
+      },
+      "member3": {
+        "account_id": 105,
+        "memberName": "Eve",
+        "items": [
+          {"id": 11, "item": "Item B", "amount": 25.00, "paid_by": 106},
+          {"id": 25, "item": "Item C", "amount": 17.89, "paid_by": 105}
+        ]
+      }
+    }
+  },
+
+  "203": { 
+    "group_name": "Group3",
+    "members": {
+      "member1": {
+        "account_id": 106,
+        "memberName": "Frank",
+        "items": [
+          {"id": 71, "item": "Item H", "amount": 45.20, "paid_by": 106},
+          {"id": 83, "item": "Item I", "amount": 15.80, "paid_by": 107}
+        ]
+      },
+      "member2": {
+        "account_id": 103,
+        "memberName": "Charlie",
+        "items": [
+          {"id": 92, "item": "Item J", "amount": 32.60, "paid_by": 108},
+          {"id": 105, "item": "Item K", "amount": 18.45, "paid_by": 107}
+        ]
+      },
+      "member3": {
+        "account_id": 102,
+        "memberName": "Bob",
+        "items": [
+          {"id": 113, "item": "Item L", "amount": 27.60, "paid_by": 106},
+          {"id": 121, "item": "Item M", "amount": 9.80, "paid_by": 108}
+        ]
+      }
+    }
+  },
+
+  "204": {  
+    "group_name": "Group4",
+    "members": {
+      "member1": {
+        "account_id": 107,
+        "memberName": "Grace",
+        "items": [
+          {"id": 134, "item": "Item N", "amount": 36.75, "paid_by": 108},
+          {"id": 142, "item": "Item O", "amount": 24.80, "paid_by": 107}
+        ]
+      },
+      "member2": {
+        "account_id": 104,
+        "memberName": "David",
+        "items": [
+          {"id": 157, "item": "Item P", "amount": 22.40, "paid_by": 109},
+          {"id": 163, "item": "Item Q", "amount": 18.75, "paid_by": 110}
+        ]
+      },
+      "member3": {
+        "account_id": 101,
+        "memberName": "Alice",
+        "items": [
+          {"id": 169, "item": "Item R", "amount": 28.90, "paid_by": 111},
+          {"id": 175, "item": "Item S", "amount": 11.40, "paid_by": 110}
+        ]
+      }
+    }
+  }
+}
