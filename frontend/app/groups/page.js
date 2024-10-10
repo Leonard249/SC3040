@@ -15,6 +15,15 @@ const GroupPage = () => {
   const [userName, setUserName] = useState("");
   const [userMap, setUserMap] = useState({});
 
+  const getGroupName = async (groupId) => {
+    try {
+      const response = await apiClient.get(`/v1/get/get-group-name/${groupId}`);
+      return response.data.group_name;
+    } catch (error) {
+      console.error("Error fetching group name:", error);
+      return "Unnamed Group";
+    }
+  };
   // Function to save user_id and memberName
   const saveUserMapping = (userId, memberName) => {
     if (!userId || !memberName) {
@@ -31,8 +40,16 @@ const GroupPage = () => {
       try {
         let responseData = await apiClient.get(`/v1/expense/all/${userId}`);
         const data = responseData.data.data.groups;
-        setGroups(data);
 
+        // Fetch group names for each group
+        const groupsWithNames = await Promise.all(
+          data.map(async (group) => {
+            const groupName = await getGroupName(group.group_id);
+            return { ...group, group_name: groupName }; // Attach group name to the group object
+          })
+        );
+
+        setGroups(groupsWithNames);
         let foundUser = false;
         data.forEach((group) => {
           group.users.forEach((member) => {
@@ -94,7 +111,7 @@ const GroupPage = () => {
           <option value="">Select a Group</option>
           {groups.map((group) => (
             <option key={group.group_id} value={group.group_id}>
-              {group.group_id}
+              {group.group_name}
             </option>
           ))}
         </select>
@@ -105,7 +122,7 @@ const GroupPage = () => {
             <div className="row-left">
               <span className="grouppage-font">Group Name:</span>
               <span className="grouppage-font">
-                {currentGroup.group_id || "No group selected"}
+                {currentGroup.group_name || "No group selected"}
               </span>
             </div>
             <div className="row-right">
