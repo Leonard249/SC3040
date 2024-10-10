@@ -1,38 +1,60 @@
 "use client";
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { useRouter } from 'next/navigation';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { AiOutlineDelete } from 'react-icons/ai'; // Import the delete icon
+import { useSearchParams } from 'next/navigation';
+import apiClient from "@/app/axios";
 
 // Constants
 const ITEM_TYPE = 'ITEM';
 
-// Draggable Item component
-const Item = ({ name, amount, onDrop, onDelete }) => {
+// Item component
+const Item = ({ id, name, amount, assignedCount, onDelete, onPutBack }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ITEM_TYPE,
-    item: { name, amount },
+    item: { id, name, amount },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
   }));
+
+  // Calculate display amount based on assigned count
+  const displayAmount = assignedCount > 0 ? (amount / assignedCount).toFixed(2) : amount.toFixed(2);
+
+  const handleDelete = () => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${name}?`);
+    if (confirmDelete) {
+      onDelete(id);
+    }
+  };
 
   return (
     <div
       ref={drag}
       className={`flex justify-between items-center p-2 mb-2 bg-blue-500 text-white rounded ${isDragging ? 'opacity-50' : 'opacity-100'}`}
     >
-      <span>{name} - ${amount}</span>
-      <button onClick={onDelete} className="text-red-800 hover:text-red-700">
-        <AiOutlineDelete />
-      </button>
+      <span>{name} - ${displayAmount}</span>
+      <div>
+        <button onClick={handleDelete} className="text-red-500 hover:text-red-700">
+          <AiOutlineDelete />
+        </button>
+        {assignedCount > 0 && (
+          <button onClick={() => onPutBack({ id, name, amount })} className="text-green-500 hover:text-green-700 ml-2">
+            Put Back
+          </button>
+        )}
+      </div>
     </div>
   );
 };
 
-// Droppable Member component
-const Member = ({ member, onDropItem, assignedItems, onDeleteItem }) => {
+
+
+
+// Member component
+const Member = ({ member, onDropItem, assignedItems, onDeleteItem, onPutBackItem }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ITEM_TYPE,
     drop: (item) => onDropItem(item, member),
@@ -44,17 +66,19 @@ const Member = ({ member, onDropItem, assignedItems, onDeleteItem }) => {
   return (
     <div
       ref={drop}
-      className={`p-4 bg-gray-100 rounded ${isOver ? 'bg-green-300' : ''}`}
+      className={`p-4 bg-gray-100 rounded mb-2 border-b-2 ${isOver ? 'bg-green-300' : ''}`}
     >
       <p className="text-center">Member {member}</p>
       <div className="mt-2">
-        {assignedItems.map((item, idx) => (
+        {assignedItems.map((item) => (
           <Item
-            key={idx}
+            key={item.id}
+            id={item.id}
             name={item.name}
             amount={item.amount}
-            onDrop={onDropItem}
-            onDelete={() => onDeleteItem(member, item)}
+            assignedCount={item.assignedCount}
+            onDelete={() => onDeleteItem(member, item)} // Pass member and item
+            onPutBack={() => onPutBackItem(item)}
           />
         ))}
       </div>
@@ -62,7 +86,11 @@ const Member = ({ member, onDropItem, assignedItems, onDeleteItem }) => {
   );
 };
 
-// Modal component for manual input
+
+
+
+
+
 const ManualInputModal = ({ isOpen, onClose, onAddItem }) => {
   const [itemName, setItemName] = useState('');
   const [amount, setAmount] = useState('');
@@ -70,10 +98,19 @@ const ManualInputModal = ({ isOpen, onClose, onAddItem }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (itemName && amount) {
-      onAddItem({ name: itemName, amount: parseFloat(amount) });
+      const newItem = {
+        id: Date.now(),
+        name: itemName,
+        amount: parseFloat(amount),
+        assignedCount: 0,
+      };
+      console.log("Adding item:", newItem);
+      onAddItem(newItem);
       setItemName('');
       setAmount('');
       onClose();
+    } else {
+      alert("Please fill in all fields");
     }
   };
 
@@ -118,140 +155,228 @@ const ManualInputModal = ({ isOpen, onClose, onAddItem }) => {
   );
 };
 
+
+// Main SplitPage component
 const SplitPage = () => {
   const router = useRouter();
-  const [items, setItems] = useState([
-    { name: 'Item 1', amount: 10 },
-    { name: 'Item 2', amount: 20 },
-    { name: 'Item 3', amount: 15 },
-    { name: 'Item 4', amount: 25 },
-    { name: 'Item 5', amount: 30 },
-    { name: 'Item 6', amount: 5 }
-  ]);
+  const searchParams = useSearchParams(); 
+  const groupId = searchParams.get('groupId'); 
+  const [items, setItems] = useState([]);
 
-  const [members, setMembers] = useState([
-    { id: 1, items: [] },
-    { id: 2, items: [] },
-    { id: 3, items: [] },
-    { id: 4, items: [] },
-    { id: 5, items: [] },
-    { id: 6, items: [] },
-  ]);
+  const [members, setMembers] = useState([]);
+
+  const [image, setImage] = useState('');
+
+  const convertDataURIToPlainText = (dataURI) => {
+    // Check if the dataURI is valid and includes base64 encoding
+    if (dataURI.includes('base64,')) {
+      // Split the dataURI at 'base64,' and return only the base64 string part
+      return dataURI.split('base64,')[1];
+    }
+    // If the dataURI does not contain 'base64,', return it unchanged or handle error
+    return '';
+  };
+
+
+  useEffect(() => {
+    const base64data = localStorage.getItem('base64File');
+    setImage(base64data);
+
+    // Function to handle OCR scan
+    const ocrScan = () => {
+      return apiClient.post('/v1/ocr/scan', {
+        image: convertDataURIToPlainText(base64data),
+      });
+    };
+
+    // Function to fetch group members
+    const fetchMembers = () => {
+      //TODO: convert groupId
+      let groupId = "670761b7f7d1a0abedfdb6e8"
+      return apiClient.get(`/v1/groups/get_user/${groupId}`);
+    };
+
+    // Execute both API requests in parallel using Promise.all
+    Promise.all([ocrScan(), fetchMembers()])
+        .then(([ocrResponse, membersResponse]) => {
+          // Handle OCR Scan response
+          if (ocrResponse.status === 200) {
+            const formattedItems = ocrResponse.data.data.map((item, index) => ({
+              id: index + 1,
+              name: item.item,
+              amount: item.price,
+              assignedCount: 0,
+            }));
+            setItems(formattedItems);
+            alert('OCR Scan Successful');
+          } else {
+            alert('OCR Scan Failed');
+          }
+
+          // Handle Members response
+          if (Array.isArray(membersResponse.data.data)) {
+            const formattedMembers = membersResponse.data.data.map((member) => ({
+              id: member._id,
+              username: member.username,
+              items: [],
+            }));
+            setMembers(formattedMembers);
+          } else {
+            console.error("membersResponse.data is not an array:", membersResponse.data);
+          }
+        })
+        .catch((error) => {
+          console.error('Error occurred during API requests:', error);
+        });
+  }, [groupId]);
 
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleDropItem = (item, member) => {
-    // Remove the dropped item from the item list if it's being moved from there
-    setItems((prevItems) => prevItems.filter((i) => i.name !== item.name));
-
-    // Add the item to the respective member's list or move it if it already exists
     setMembers((prevMembers) =>
       prevMembers.map((m) => {
+        console.log(m)
         if (m.id === member) {
-          // If the item is already assigned to this member, do nothing
-          if (m.items.some(i => i.name === item.name)) {
-            return m;
+          const existingItem = m.items.find(i => i.id === item.id);
+          if (!existingItem) {
+            return { ...m, items: [...m.items, { ...item, assignedCount: 1 }] };
+          } else {
+            return {
+              ...m,
+              items: m.items.map(i =>
+                i.id === item.id ? { ...i, assignedCount: i.assignedCount + 1 } : i
+              ),
+            };
           }
-          // Otherwise, add the item to this member's list
-          return { ...m, items: [...m.items, item] };
-        } else {
-          // Check if the item belongs to this member; if yes, remove it
-          return { ...m, items: m.items.filter((i) => i.name !== item.name) };
         }
+        return m; 
       })
     );
-  };
 
-  const handleAddItem = (newItem) => {
-    setItems((prevItems) => [...prevItems, newItem]);
+    setItems((prevItems) => prevItems.filter(i => i.id !== item.id));
   };
 
   const handleDeleteItem = (memberId, itemToDelete) => {
-    // Confirm deletion
     const confirmDelete = window.confirm(`Are you sure you want to delete ${itemToDelete.name}?`);
     if (confirmDelete) {
-      // Remove the item from the assigned member's list
       setMembers((prevMembers) =>
         prevMembers.map((m) => {
           if (m.id === memberId) {
-            return { ...m, items: m.items.filter(i => i.name !== itemToDelete.name) };
+            return {
+              ...m,
+              items: m.items.filter(i => i.id !== itemToDelete.id),
+            };
           }
           return m;
         })
       );
+  
+      setItems((prevItems) =>
+        prevItems.map((i) => {
+          if (i.id === itemToDelete.id) {
+            return { ...i, assignedCount: Math.max(0, i.assignedCount - 1) };
+          }
+          return i;
+        })
+      );
     }
   };
+  
 
-  const handleRescan = () => {
-    router.push('/scan-receipt'); // Navigate back to the Scan Receipt page
+  const handlePutBack = (item) => {
+    setMembers((prevMembers) => 
+      prevMembers.map((m) => {
+        if (m.items.find(i => i.id === item.id)) {
+          return {
+            ...m,
+            items: m.items.filter(i => i.id !== item.id),
+          };
+        }
+        return m; 
+      })
+    );
+
+    setItems((prevItems) => {
+      const existingItem = prevItems.find(i => i.id === item.id);
+      if (existingItem) {
+        return prevItems; 
+      }
+      return [...prevItems, { ...item, assignedCount: 0 }];
+    });
   };
 
+
+  const handleRescan = () => {
+    router.push('/scan-receipt'); 
+  };
+
+  const handleAddItem = (newItem) => {
+    console.log("New item added:", newItem); // Debugging line
+    setItems((prevItems) => [...prevItems, newItem]);
+  };
+  
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="split-page flex justify-center items-center h-screen">
-        {/* Left section for the receipt */}
-        <div className="receipt-section p-6 border">
-          <h2 className="text-xl font-semibold mb-4">The receipt you provided</h2>
-          {/* Add receipt image and details here */}
-          <img src="/path/to/receipt-image" alt="Receipt" className="mb-4" />
-          <button
-            onClick={handleRescan}
-            className="bg-red-500 text-white py-2 px-4 rounded"
-          >
-            Re-scan
-          </button>
+      <div className="flex justify-center items-center h-screen relative">
+        <div className="absolute top-20 z-10">
+          <h2 className="text-xl font-semibold mb-4">
+            Receipt for group: <span className="text-red-500">{groupId}</span>
+          </h2>
         </div>
-
-        {/* Middle section for scanned items */}
-        <div className="items-section p-6 border ml-6 mr-6">
-          <h2 className="text-xl font-semibold mb-4">Scanned items</h2>
-          <div className="drag-container grid grid-cols-1 gap-2">
-            {items.map((item) => (
+        <div className="split-page flex justify-center items-center h-screen">
+          {/* Receipt Section */}
+          <div className="receipt-section p-6 border">
+            <h2 className="text-xl font-semibold mb-4">The receipt you provided</h2>
+            <img src={image} alt="Receipt" className="mb-4" />
+  
+            {/* Buttons Wrapper with Flexbox */}
+            <div className="flex gap-4 mb-4"> {/* Added flex and gap for spacing */}
+              <button onClick={handleRescan} className="bg-red-500 text-white py-3 px-6 rounded">
+                Rescan Receipt
+              </button>
+              <button onClick={() => setModalOpen(true)} className="bg-black text-white py-3 px-6 rounded">
+                Add Item Manually
+              </button>
+            </div>
+  
+            <ManualInputModal 
+              isOpen={modalOpen} 
+              onClose={() => setModalOpen(false)} 
+              onAddItem={handleAddItem} 
+            />
+            {/* Displaying Items */}
+            {items.map(item => (
               <Item
-                key={item.name}
+                key={item.id}
+                id={item.id}
                 name={item.name}
                 amount={item.amount}
-                onDrop={handleDropItem}
-                onDelete={() => setItems((prev) => prev.filter(i => i.name !== item.name))}
+                assignedCount={item.assignedCount}
+                onDelete={() => handleDeleteItem(member.id, item)} // This line is causing the error
+                onPutBack={handlePutBack}
               />
             ))}
           </div>
-        </div>
-
-        {/* Right section for members */}
-        <div className="split-section p-6 border">
-          <h2 className="text-xl font-semibold mb-4">Drag and drop towards member's purchased items</h2>
-          <div className="drag-container grid grid-cols-1 gap-4">
+  
+          {/* Members Section */}
+          <div className="members-section p-6 border ml-4">
+            <h2 className="text-xl font-semibold mb-4">Members</h2>
             {members.map((member) => (
               <Member
                 key={member.id}
                 member={member.id}
-                assignedItems={member.items}
                 onDropItem={handleDropItem}
+                assignedItems={member.items}
                 onDeleteItem={handleDeleteItem}
+                onPutBackItem={handlePutBack}
               />
             ))}
           </div>
-          <div className="text-center mt-6">
-            <button className="bg-green-500 text-white py-2 px-4 rounded mr-4">Go settle up</button>
-            <button
-              onClick={() => setModalOpen(true)}
-              className="bg-gray-500 text-white py-2 px-4 rounded"
-            >
-              Manual input
-            </button>
-          </div>
         </div>
-
-        {/* Manual Input Modal */}
-        <ManualInputModal 
-          isOpen={modalOpen}
-          onClose={() => setModalOpen(false)}
-          onAddItem={handleAddItem}
-        />
       </div>
     </DndProvider>
   );
-};
+  
+};  
 
 export default SplitPage;
