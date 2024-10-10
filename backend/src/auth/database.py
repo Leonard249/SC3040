@@ -21,5 +21,5 @@ async def get_user_by_email(email: str):
 
 async def create_user(email: str, hashed_password: str):
     user = User(email=email, password=hashed_password, username=email)
-    await users_collection.insert_one(user.model_dump())
-    return user
+    user_cursor = await users_collection.insert_one(user.model_dump())
+    return user_cursor.inserted_id
