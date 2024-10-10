@@ -17,7 +17,8 @@ print(mongo_connection_url)
 mongoClient = AsyncIOMotorClient(mongo_connection_url)
 db = mongoClient[os.environ.get("DB_NAME")]
 users_collection = db["users"]
-blacklist_collection = db["blacklist"]
+blacklisted_tokens = set()
+#blacklist_collection = db["blacklist"]
 
 
 async def get_user_by_email(email: str):
@@ -59,7 +60,7 @@ async def fetch_smtp_settings_from_db(email):
 
 def infer_smtp_settings(domain):
     common_smtp_settings = {
-        'gmail.com': {'server': 'smtp.gmail.com', 'port': 587, 'user': 'Evauts@gmail.com', 'password': 'kcmo zkyo xpgp fuqv'},
+        'gmail.com': {'server': 'smtp.gmail.com', 'port': 587, 'user': 'bananasplitaswe@gmail.com', 'password': 'ktmb sisp oyrs marw'},
         'yahoo.com': {'server': 'smtp.mail.yahoo.com', 'port': 465, 'user': '', 'password': ''},
         'outlook.com': {'server': 'smtp.office365.com', 'port': 587, 'user': '', 'password': ''},
         # Add more common domains and their SMTP settings as needed
@@ -104,8 +105,7 @@ async def update_user_password(email: str, hashed_password: str):
     await users_collection.update_one({"email": email}, {"$set": {"password": hashed_password}})
 
 async def blacklist_token(token: str):
-    await blacklist_collection.insert_one({"token": token})
+    await blacklist_token.add(token)
 
 async def is_token_blacklisted(token: str) -> bool:
-    token_doc = await blacklist_collection.find_one({"token": token})
-    return token_doc is not None
+    return token in blacklist_token
