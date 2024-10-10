@@ -5,9 +5,9 @@ from typing import List
 
 class Item(BaseModel):
     name: str
-    cost: str
+    cost: float
     user_id: str
-    settled: bool
+    paid_by: str
 
 
 class ExpenseGroup(BaseModel):

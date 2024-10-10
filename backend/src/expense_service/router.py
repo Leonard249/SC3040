@@ -28,12 +28,14 @@ async def return_hello_world() -> dict[str, str]:
 # Create Expense
 @router.post("/", status_code=200)
 async def create_expense(expense_group: ExpenseGroup):
-    group_name = expense_group.group
+    group_id = expense_group.group
     items = [item.dict() for item in expense_group.items]
 
-    insert_result = await expense_service.create_expenses(group_name, items)
+    insert_result = await expense_service.create_expenses(group_id, items)
     if insert_result:
         return {"message": "Successfully Updated"}
+    else:
+        return {"message": "Failed"}
 
 
 # Get Expense

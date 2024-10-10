@@ -9,15 +9,19 @@ class ExpenseService:
     def __init__(self):
         self.expense_collection = db["expense"]
 
-    async def create_expenses(self, group_name, items):
-        expense = {
-          "group": group_name,
-          "items": items
-        }
+    async def create_expenses(self, group_id, items):
         try:
-            insert_result = await self.expense_collection.insert_one(expense)
-            print(f"Group inserted with ID: {insert_result.inserted_id}")
-            return insert_result
+            for item in items:
+                expense = {
+                    "group_id": ObjectId(group_id),
+                    "user_id": ObjectId(item["user_id"]),
+                    "amount": item["cost"],
+                    "item": item["name"],
+                    "paid_by": ObjectId(item["paid_by"])
+                }
+                insert_result = await self.expense_collection.insert_one(expense)
+                print(f"Group inserted with ID: {insert_result.inserted_id}")
+            return True
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
