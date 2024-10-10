@@ -11,6 +11,7 @@ const Home = () => {
     const [newGroup, setNewGroup] = useState({ groupName: '', members: [{ user_id: userId }] }); // Default to current user
     const [showForm, setShowForm] = useState(false);
     const [userName, setUserName] = useState('');
+    const [availableUsers, setAvailableUsers] = useState([])
 
     useEffect(() => {
         const fetchData = async () => {
@@ -154,10 +155,23 @@ const handleAddGroup = async () => {
 
     // Function to filter available users for the dropdown
     const getAvailableUsers = (selectedMembers, currentIndex) => {
-        return ALL_USERS.data.filter(user => 
+        return availableUsers.filter(user =>
             !selectedMembers.includes(user._id) || user._id === selectedMembers[currentIndex] // Allow replacing selected user
         );
     };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const responseData = await apiClient.get(`/v1/common/users`);
+                setAvailableUsers(responseData.data.data)
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData(); // Call the async function inside useEffect
+    }, [])
 
     return (
         <div className="flex flex-col items-center justify-center p-6 h-screen">
@@ -188,7 +202,7 @@ const handleAddGroup = async () => {
             <div className="w-1/2">
                 <h2 className="text-2xl font-bold mb-4">Total expenses: {totalAmountOwed === 0 ? '$0.00' : `${totalAmountOwed > 0 ? '+' : '-'}$${Math.abs(totalAmountOwed).toFixed(2)}`}</h2>
                 {totalAmountOwed === 0 ? (
-                    <p>You're all settled up. Awesome!</p>
+                    <p>You&#39;re all settled up. Awesome!</p>
                 ) : (
                     <p>You still have expenses to settle.</p>
                 )}
