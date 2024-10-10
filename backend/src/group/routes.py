@@ -6,9 +6,8 @@ from typing import List
 import uuid
 from bson import ObjectId
 from fastapi import APIRouter
-from src.group.model import GroupModel
+from src.group.model import GroupModel, User
 from src.group.database import group_collection
-
 
 ROUTE_PREFIX = "/" + os.getenv("EXPENSE_SERVICE_VERSION") + "/groups"
 router = APIRouter(prefix=ROUTE_PREFIX, tags=["group-service"])
@@ -29,22 +28,20 @@ async def create_group(group: GroupModel = Body(...)):
 
     # group.users = [ObjectId(user.user_id) for user in group.users]
     group_dict = group.dict(by_alias=True, exclude_none=True)
-    group_dict["users"] = [ObjectId(user["user_id"]) for user in group_dict["users"]]
 
-    new_group = await group_collection.insert_one(
-        group_dict
-    )
+    group_dict["users"] = [{"user_id": ObjectId(user["user_id"])} for user in group_dict["users"]]
+
+    new_group = await group_collection.insert_one(group_dict)
 
     return {"message": "successful", "group_id": str(new_group.inserted_id)}
 
 
 @router.put(
-        "/add_user/{group_id}",
+        "/add_user",
         response_description="Add a User",
-        response_model=GroupModel,
         response_model_by_alias=False)
-async def add_user_to_group(group_id: str, user: str):
-    group = await group_collection.find_one({"_id": ObjectId(group_id)})
+async def add_user_to_group(user: User):
+    group = await group_collection.find_one({"_id": ObjectId(user.group_id)})
     if not group:
         raise HTTPException(status_code=404, detail="Group not found.")
     
@@ -52,9 +49,8 @@ async def add_user_to_group(group_id: str, user: str):
     if user in group['users']:
         raise HTTPException(status_code=400, detail="User already in the group.")
     
-    await group_collection.update_one({"_id": ObjectId(group_id)}, {"$push": {"users": user}})
-    group = await group_collection.find_one({"_id": ObjectId(group_id)})
-    return group
+    await group_collection.update_one({"_id": ObjectId(user.group_id)}, {"$push": {"users": {"user_id": ObjectId(user.user_id)}}})
+    return {"message": "successful"}
 
 
 @router.put("/remove_user/{group_id}",
