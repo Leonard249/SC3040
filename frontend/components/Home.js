@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { GROUP_USER_ITEM, ALL_USERS } from '../lib/constant'; // Import the GROUP_USER_ITEM and ALL_USERS constants
+import { GROUP_USER_ITEM, ALL_USERS } from '../lib/constant';
+import axios from "axios";
+import apiClient from "@/app/axios"; // Import the GROUP_USER_ITEM and ALL_USERS constants
 
 const Home = () => {
     const userId = "6706087b1143dcab37a70f34"; // Assuming the current user has account_id 101
@@ -11,27 +13,34 @@ const Home = () => {
     const [userName, setUserName] = useState('');
 
     useEffect(() => {
-        const data = GROUP_USER_ITEM.data.groups;
-        setGroups(data);
+        const fetchData = async () => {
+            try {
+                let responseData = await apiClient.get(`/v1/expense/all/${userId}`);
+                console.log(responseData)
+                const data = responseData.data.data.groups;
+                setGroups(data);
 
-        const foundUser = data.flatMap(group => group.users)
-                               .find(member => member.user_id === userId.toString());
+                const foundUser = data.flatMap(group => group.users)
+                    .find(member => member.user_id === userId.toString());
 
-        if (foundUser) {
-            setUserName(foundUser.memberName);
-        } else {
-            console.warn('User not found');
-        }
-    }, []);
+                if (foundUser) {
+                    setUserName(foundUser.memberName);
+                    calculateTotalOwed(data);
+                } else {
+                    console.warn('User not found');
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
 
-    useEffect(() => {
-        if (userName) {
-            const data = GROUP_USER_ITEM.data.groups;
-            calculateTotalOwed(data);
-        }
-    }, [userName]);
+        fetchData(); // Call the async function inside useEffect
+
+    }, []); // Add `userId` as a dependency if it changes
+
 
     const calculateTotalOwed = (data) => {
+        console.log(data)
         let owed = {};
         data.forEach(group => {
             let groupTotal = 0;
@@ -79,16 +88,15 @@ const handleAddGroup = async () => {
     console.log("Sending group data:", JSON.stringify(formattedGroup, null, 2));
 
     try {
-        const response = await fetch('/api/addGroup', {
-            method: 'POST',
+        console.log(formattedGroup)
+        const response = await apiClient.post('/v1/groups', formattedGroup, {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(formattedGroup),
         });
 
-        if (response.ok) {
-            const addedGroup = await response.json();
+        if (response.status === 200) { // Check for success using response status
+            const addedGroup = response.data; // Axios automatically parses JSON
             setGroups([...groups, addedGroup]);
             setNewGroup({ groupName: '', members: [{ user_id: userId }] }); // Reset to default with current user
             setShowForm(false);
@@ -99,7 +107,7 @@ const handleAddGroup = async () => {
             // Refresh the page
             window.location.reload();
         } else {
-            console.error('Error adding group');
+            console.error('Error adding group:', response.statusText);
         }
     } catch (error) {
         console.error('Error adding group:', error);
