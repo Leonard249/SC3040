@@ -10,6 +10,8 @@ from src.common_service.router import router as commonRouter
 from src.OCR.router import router as ocrRouter
 from src.auth.routes import router as authRouter
 
+from fastapi.middleware.cors import CORSMiddleware
+
 load_dotenv()
 relative_path = "src/"
 
@@ -19,6 +21,14 @@ ApiClient.include_router(createGroupRouter)  # Include the auth router
 ApiClient.include_router(commonRouter)
 ApiClient.include_router(ocrRouter)
 ApiClient.include_router(authRouter)
+
+ApiClient.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # List of allowed origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 templates = Jinja2Templates(directory=(relative_path + "templates"))
 

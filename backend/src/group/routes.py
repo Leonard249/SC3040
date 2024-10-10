@@ -46,7 +46,7 @@ async def add_user_to_group(user: User):
         raise HTTPException(status_code=404, detail="Group not found.")
     
     # Add user if not already in the list
-    if user in group['users']:
+    if {"user_id": ObjectId(user.user_id)} in group['users']:
         raise HTTPException(status_code=400, detail="User already in the group.")
     
     await group_collection.update_one({"_id": ObjectId(user.group_id)}, {"$push": {"users": {"user_id": ObjectId(user.user_id)}}})
