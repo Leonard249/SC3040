@@ -4,12 +4,13 @@ import { useRouter } from 'next/navigation';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { AiOutlineDelete } from 'react-icons/ai'; // Import the delete icon
+import { useSearchParams } from 'next/navigation';
 
 // Constants
 const ITEM_TYPE = 'ITEM';
 
-// Draggable Item component
-const Item = ({ id, name, amount, assignedCount, onDelete }) => {
+// Item component
+const Item = ({ id, name, amount, assignedCount, onDelete, onPutBack }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ITEM_TYPE,
     item: { id, name, amount },
@@ -18,7 +19,7 @@ const Item = ({ id, name, amount, assignedCount, onDelete }) => {
     }),
   }));
 
-  // Calculate the amount per member
+  // Calculate display amount based on assigned count
   const displayAmount = assignedCount > 0 ? (amount / assignedCount).toFixed(2) : amount.toFixed(2);
 
   return (
@@ -27,15 +28,24 @@ const Item = ({ id, name, amount, assignedCount, onDelete }) => {
       className={`flex justify-between items-center p-2 mb-2 bg-blue-500 text-white rounded ${isDragging ? 'opacity-50' : 'opacity-100'}`}
     >
       <span>{name} - ${displayAmount}</span>
-      <button onClick={() => onDelete(id)} className="text-red-500 hover:text-red-700">
-        <AiOutlineDelete />
-      </button>
+      <div>
+        <button onClick={() => onDelete(id)} className="text-red-500 hover:text-red-700">
+          <AiOutlineDelete />
+        </button>
+        {assignedCount > 0 && (
+          <button onClick={() => onPutBack({ id, name, amount })} className="text-green-500 hover:text-green-700 ml-2">
+            Put Back
+          </button>
+        )}
+      </div>
     </div>
   );
 };
 
-// Droppable Member component
-const Member = ({ member, onDropItem, assignedItems, onDeleteItem }) => {
+
+
+// Member component
+const Member = ({ member, onDropItem, assignedItems, onDeleteItem, onPutBackItem }) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: ITEM_TYPE,
     drop: (item) => onDropItem(item, member),
@@ -47,7 +57,7 @@ const Member = ({ member, onDropItem, assignedItems, onDeleteItem }) => {
   return (
     <div
       ref={drop}
-      className={`p-4 bg-gray-100 rounded ${isOver ? 'bg-green-300' : ''}`}
+      className={`p-4 bg-gray-100 rounded mb-2 border-b-2 ${isOver ? 'bg-green-300' : ''}`}
     >
       <p className="text-center">Member {member}</p>
       <div className="mt-2">
@@ -59,6 +69,7 @@ const Member = ({ member, onDropItem, assignedItems, onDeleteItem }) => {
             amount={item.amount}
             assignedCount={item.assignedCount}
             onDelete={() => onDeleteItem(member, item)}
+            onPutBack={() => onPutBackItem(item)}
           />
         ))}
       </div>
@@ -66,7 +77,8 @@ const Member = ({ member, onDropItem, assignedItems, onDeleteItem }) => {
   );
 };
 
-// Modal component for manual input
+
+
 const ManualInputModal = ({ isOpen, onClose, onAddItem }) => {
   const [itemName, setItemName] = useState('');
   const [amount, setAmount] = useState('');
@@ -74,10 +86,19 @@ const ManualInputModal = ({ isOpen, onClose, onAddItem }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (itemName && amount) {
-      onAddItem({ id: Date.now(), name: itemName, amount: parseFloat(amount), assignedCount: 0 });
+      const newItem = {
+        id: Date.now(),
+        name: itemName,
+        amount: parseFloat(amount),
+        assignedCount: 0,
+      };
+      console.log("Adding item:", newItem);
+      onAddItem(newItem);
       setItemName('');
       setAmount('');
       onClose();
+    } else {
+      alert("Please fill in all fields");
     }
   };
 
@@ -122,8 +143,12 @@ const ManualInputModal = ({ isOpen, onClose, onAddItem }) => {
   );
 };
 
+
+// Main SplitPage component
 const SplitPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams(); 
+  const groupId = searchParams.get('groupId'); 
   const [items, setItems] = useState([
     { id: 1, name: 'Item 1', amount: 10, assignedCount: 0 },
     { id: 2, name: 'Item 2', amount: 20, assignedCount: 0 },
@@ -145,36 +170,26 @@ const SplitPage = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleDropItem = (item, member) => {
-    setMembers((prevMembers) => {
-      return prevMembers.map((m) => {
+    setMembers((prevMembers) =>
+      prevMembers.map((m) => {
         if (m.id === member) {
           const existingItem = m.items.find(i => i.id === item.id);
           if (!existingItem) {
-            // If the item is not already assigned, add it with assignedCount of 1
-            const updatedItems = [...m.items, { ...item, assignedCount: 1 }];
-            return { ...m, items: updatedItems };
+            return { ...m, items: [...m.items, { ...item, assignedCount: 1 }] };
           } else {
-            // If already assigned, increment the assignedCount for all members
-            const updatedItems = m.items.map(i => {
-              if (i.id === item.id) {
-                return { ...i, assignedCount: i.assignedCount + 1 };
-              }
-              return i;
-            });
-            return { ...m, items: updatedItems };
+            return {
+              ...m,
+              items: m.items.map(i =>
+                i.id === item.id ? { ...i, assignedCount: i.assignedCount + 1 } : i
+              ),
+            };
           }
         }
-        return m; // Return other members unchanged
-      });
-    });
-  
-    // Update the global items state to remove the assigned item
-    setItems((prevItems) => prevItems.filter(i => i.id !== item.id));
-  };
-  
+        return m; 
+      })
+    );
 
-  const handleAddItem = (newItem) => {
-    setItems((prevItems) => [...prevItems, newItem]);
+    setItems((prevItems) => prevItems.filter(i => i.id !== item.id));
   };
 
   const handleDeleteItem = (memberId, itemToDelete) => {
@@ -191,75 +206,109 @@ const SplitPage = () => {
           return m;
         })
       );
-  
-      // Update the item in the items state to reflect the decrement of assignedCount
+
       setItems((prevItems) =>
         prevItems.map((i) => {
           if (i.id === itemToDelete.id) {
-            return { ...i, assignedCount: Math.max(0, i.assignedCount - 1) }; // Ensure it does not go below 0
+            return { ...i, assignedCount: Math.max(0, i.assignedCount - 1) };
           }
           return i;
         })
       );
     }
   };
-  
 
-  const handleRescan = () => {
-    router.push('/scan-receipt'); // Navigate back to the Scan Receipt page
+  const handlePutBack = (item) => {
+    setMembers((prevMembers) => 
+      prevMembers.map((m) => {
+        if (m.items.find(i => i.id === item.id)) {
+          return {
+            ...m,
+            items: m.items.filter(i => i.id !== item.id),
+          };
+        }
+        return m; 
+      })
+    );
+
+    setItems((prevItems) => {
+      const existingItem = prevItems.find(i => i.id === item.id);
+      if (existingItem) {
+        return prevItems; 
+      }
+      return [...prevItems, { ...item, assignedCount: 0 }];
+    });
   };
 
+
+  const handleRescan = () => {
+    router.push('/scan-receipt'); 
+  };
+
+  const handleAddItem = (newItem) => {
+    console.log("New item added:", newItem); // Debugging line
+    setItems((prevItems) => [...prevItems, newItem]);
+  };
+  
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="split-page flex justify-center items-center h-screen">
-        {/* Left section for the receipt */}
-        <div className="receipt-section p-6 border">
-          <h2 className="text-xl font-semibold mb-4">The receipt you provided</h2>
-          {/* Add receipt image and details here */}
-          <img src="/path/to/receipt-image" alt="Receipt" className="mb-4" />
-          <button
-            onClick={handleRescan}
-            className="bg-blue-500 text-white py-2 px-4 rounded"
-          >
-            Rescan Receipt
-          </button>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="bg-blue-500 text-white py-2 px-4 rounded ml-2"
-          >
-            Add Item Manually
-          </button>
-
-          <h2 className="text-xl font-semibold mt-4">Items</h2>
-          {items.map((item) => (
-            <Item
-              key={item.id}
-              id={item.id}
-              name={item.name}
-              amount={item.amount}
-              assignedCount={item.assignedCount} // Pass the assigned count
-              onDelete={handleDeleteItem} // Pass the handleDeleteItem function
-            />
-          ))}
+      <div className="flex justify-center items-center h-screen relative">
+        <div className="absolute top-20 z-10">
+          <h2 className="text-xl font-semibold mb-4">
+            Receipt for group: <span className="text-red-500">{groupId}</span>
+          </h2>
         </div>
+        <div className="split-page flex justify-center items-center h-screen">
+          {/* Receipt Section */}
+          <div className="receipt-section p-6 border">
+            <h2 className="text-xl font-semibold mb-4">The receipt you provided</h2>
+            <img src="/path/to/receipt-image" alt="Receipt" className="mb-4" />
 
-        {/* Right section for members */}
-        <div className="members-section p-6 border">
-          <h2 className="text-xl font-semibold mb-4">Members</h2>
-          {members.map((member) => (
-            <Member
-              key={member.id}
-              member={member.id}
-              onDropItem={handleDropItem}
-              assignedItems={member.items}
-              onDeleteItem={handleDeleteItem} // Pass the handleDeleteItem function
+            {/* Buttons Wrapper with Flexbox */}
+            <div className="flex gap-4 mb-4"> {/* Added flex and gap for spacing */}
+              <button onClick={handleRescan} className="bg-red-500 text-white py-3 px-6 rounded">
+                Rescan Receipt
+              </button>
+              <button onClick={() => setModalOpen(true)} className="bg-black text-white py-3 px-6 rounded">
+                Add Item Manually
+              </button>
+            </div>
+
+            <ManualInputModal 
+              isOpen={modalOpen} 
+              onClose={() => setModalOpen(false)} 
+              onAddItem={handleAddItem} 
             />
-          ))}
+            {/* Displaying Items */}
+            {items.map(item => (
+              <Item
+                key={item.id}
+                id={item.id}
+                name={item.name}
+                amount={item.amount}
+                assignedCount={item.assignedCount}
+                onDelete={(id) => handleDeleteItem(memberId, item)}
+                onPutBack={handlePutBack}
+              />
+            ))}
+          </div>
+
+          {/* Members Section */}
+          <div className="members-section p-6 border ml-4">
+            <h2 className="text-xl font-semibold mb-4">Members</h2>
+            {members.map((member) => (
+              <Member
+                key={member.id}
+                member={member.id}
+                onDropItem={handleDropItem}
+                assignedItems={member.items}
+                onDeleteItem={handleDeleteItem}
+                onPutBackItem={handlePutBack}
+              />
+            ))}
+          </div>
         </div>
       </div>
-
-      {/* Manual Input Modal */}
-      <ManualInputModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onAddItem={handleAddItem} />
     </DndProvider>
   );
 };
