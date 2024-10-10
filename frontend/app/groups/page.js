@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import "./style.css";
 import { useRouter } from "next/navigation";
+import AddMember from "@/app/groups/createGroup";
 
 const GroupPage = () => {
   const router = useRouter();
@@ -100,7 +101,7 @@ const GroupPage = () => {
                 <span className="grouppage-font">{member.memberName}</span>
               </div>
             ))}
-          <button className="add-member-button">+</button>
+          {selectedGroup && currentGroup && <AddMember group_id={selectedGroup}/>}
         </div>
       </div>
     </div>
