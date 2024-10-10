@@ -9,7 +9,7 @@ from src.group.routes import router as createGroupRouter
 from src.common_service.router import router as commonRouter
 from src.OCR.router import router as ocrRouter
 from src.auth.routes import router as authRouter
-
+from src.get_function.routes import router as getRouter
 load_dotenv()
 relative_path = "src/"
 
@@ -19,6 +19,7 @@ ApiClient.include_router(createGroupRouter)  # Include the auth router
 ApiClient.include_router(commonRouter)
 ApiClient.include_router(ocrRouter)
 ApiClient.include_router(authRouter)
+ApiClient.include_router(getRouter)
 
 templates = Jinja2Templates(directory=(relative_path + "templates"))
 
