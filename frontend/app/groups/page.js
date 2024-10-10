@@ -5,7 +5,6 @@ import "./style.css";
 import { useRouter } from "next/navigation";
 import AddMember from "@/app/groups/createGroup";
 import { GROUP_USER_ITEM } from "../../lib/constant"; // Import the GROUP_USER_ITEM constant
-import EditAllocationPage from "./edit-allocation/page"; // Adjust path as necessary
 
 const GroupPage = () => {
   const userId = "6706087b1143dcab37a70f34"; // Assume this is current user
@@ -13,17 +12,26 @@ const GroupPage = () => {
   const [selectedGroup, setSelectedGroup] = useState(""); // Initialize selectedGroup with an empty string
   const [groups, setGroups] = useState([]);
   const [userName, setUserName] = useState("");
+  const [userMap, setUserMap] = useState({});
 
-  const handleRedirect = (path) => {
-    localStorage.setItem("selectedGroup", selectedGroup);
-    router.push(path);
-  };
+  // Function to save user_id and memberName
+  const saveUserMapping = (userId, memberName) => {
+    if (!userId || !memberName) {
+      console.error("Both userId and memberName are required.");
+      return;
+    }
 
-  const handleGroupChange = (event) => {
-    setSelectedGroup(event.target.value);
+    userMap[userId] = memberName; // Save the mapping
+    setUserMap(userMap);
   };
 
   useEffect(() => {
+    // Retrieve the selected group from local storage on component mount
+    const storedGroupId = localStorage.getItem("selectedGroup");
+    if (storedGroupId) {
+      setSelectedGroup(storedGroupId);
+    }
+
     const data = GROUP_USER_ITEM.data.groups;
     setGroups(data);
 
@@ -37,14 +45,32 @@ const GroupPage = () => {
       });
     });
 
+    GROUP_USER_ITEM.data.groups.forEach((group) => {
+      group.users.forEach((user) => {
+        saveUserMapping(user.user_id, user.memberName);
+      });
+    });
+
     if (!foundUser) {
       console.warn("User not found");
     }
 
-    if (data.length > 0) {
+    // Optionally set a default group if none is selected
+    if (data.length > 0 && !storedGroupId) {
       setSelectedGroup(data[0].group_id); // Set default selected group after fetching
     }
-  }, []);
+  }, []); // Run only once on mount
+
+  const handleRedirect = (path) => {
+    localStorage.setItem("selectedGroup", selectedGroup); // Store in local storage
+    router.push(path);
+  };
+
+  const handleGroupChange = (event) => {
+    const newSelectedGroup = event.target.value;
+    setSelectedGroup(newSelectedGroup);
+    localStorage.setItem("selectedGroup", newSelectedGroup); // Store the new selection in local storage
+  };
 
   const currentGroup =
     groups.find((group) => group.group_id === selectedGroup) || {};
@@ -89,7 +115,8 @@ const GroupPage = () => {
               currentGroup.users.map((user) =>
                 user.items.map((item) => (
                   <p key={item.id}>
-                    {user.memberName} paid S${item.amount} for {item.item}
+                    {user.memberName} bought {item.item} for S${item.amount}{" "}
+                    paid for by {userMap[item.paid_by]}
                   </p>
                 ))
               )}
@@ -99,7 +126,7 @@ const GroupPage = () => {
               className="settle-up"
               onClick={() => handleRedirect("/groups/edit-allocation")}
             >
-              View Allocation
+              Edit Allocation
             </button>
             <button
               className="settle-up"
