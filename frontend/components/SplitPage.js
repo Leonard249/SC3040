@@ -7,6 +7,7 @@ import { AiOutlineDelete } from 'react-icons/ai'; // Import the delete icon
 import { useSearchParams } from 'next/navigation';
 import apiClient from "@/app/axios";
 import Image from "next/image";
+import Loader from "./Loader";
 
 // Constants
 const ITEM_TYPE = 'ITEM';
@@ -167,6 +168,8 @@ const SplitPage = () => {
   const [members, setMembers] = useState([]);
 
   const [image, setImage] = useState('');
+  const [loading, setLoading] = useState(true); // Loading state to manage the loader visibility
+
 
   const convertDataURIToPlainText = (dataURI) => {
     // Check if the dataURI is valid and includes base64 encoding
@@ -240,6 +243,8 @@ const SplitPage = () => {
         }
       } catch (error) {
         console.error('Error occurred during API requests:', error);
+      } finally {
+        setLoading(false); // Set loading to false when all requests complete
       }
     };
 
@@ -332,72 +337,78 @@ const SplitPage = () => {
     console.log("New item added:", newItem); // Debugging line
     setItems((prevItems) => [...prevItems, newItem]);
   };
-  
+
   return (
-    <DndProvider backend={HTML5Backend}>
-      <div className="flex justify-center items-center h-screen relative">
-        <div className="absolute top-20 z-10">
-          <h2 className="text-xl font-semibold mb-4">
-            Receipt for group: <span className="text-red-500">{groupId}</span>
-          </h2>
-        </div>
-        <div className="split-page flex justify-center items-center h-screen">
-          {/* Receipt Section */}
-          <div className="receipt-section p-6 border">
-            <h2 className="text-xl font-semibold mb-4">The receipt you provided</h2>
-            <Image
-                src={image}
-                alt="Receipt"
-                width={256} // Restrict width to 256px (you can adjust as needed)
-                height={256} // Restrict height to 256px (adjust as needed)
-                className="mb-4 object-cover" // Apply additional Tailwind CSS classes for styling
-            />
-            {/* Buttons Wrapper with Flexbox */}
-            <div className="flex gap-4 mb-4"> {/* Added flex and gap for spacing */}
-              <button onClick={handleRescan} className="bg-red-500 text-white py-3 px-6 rounded">
-                Rescan Receipt
-              </button>
-              <button onClick={() => setModalOpen(true)} className="bg-black text-white py-3 px-6 rounded">
-                Add Item Manually
-              </button>
+      <DndProvider backend={HTML5Backend}>
+        {/* Show the loader if loading is true */}
+        {loading && <Loader />}
+
+        {/* Render the main content if loading is false */}
+        {!loading && (
+            <div className="flex justify-center items-center h-screen relative">
+              <div className="absolute top-20 z-10">
+                <h2 className="text-xl font-semibold mb-4">
+                  Receipt for group: <span className="text-red-500">{groupId}</span>
+                </h2>
+              </div>
+              <div className="split-page flex justify-center items-center h-screen">
+                {/* Receipt Section */}
+                <div className="receipt-section p-6 border">
+                  <h2 className="text-xl font-semibold mb-4">The receipt you provided</h2>
+                  <Image
+                      src={image}
+                      alt="Receipt"
+                      width={256} // Restrict width to 256px (you can adjust as needed)
+                      height={256} // Restrict height to 256px (adjust as needed)
+                      className="mb-4 object-cover" // Apply additional Tailwind CSS classes for styling
+                  />
+                  {/* Buttons Wrapper with Flexbox */}
+                  <div className="flex gap-4 mb-4"> {/* Added flex and gap for spacing */}
+                    <button onClick={handleRescan} className="bg-red-500 text-white py-3 px-6 rounded">
+                      Rescan Receipt
+                    </button>
+                    <button onClick={() => setModalOpen(true)} className="bg-black text-white py-3 px-6 rounded">
+                      Add Item Manually
+                    </button>
+                  </div>
+
+                  <ManualInputModal
+                      isOpen={modalOpen}
+                      onClose={() => setModalOpen(false)}
+                      onAddItem={handleAddItem}
+                  />
+                  {/* Displaying Items */}
+                  {items.map(item => (
+                      <Item
+                          key={item.id}
+                          id={item.id}
+                          name={item.name}
+                          amount={item.amount}
+                          assignedCount={item.assignedCount}
+                          onDelete={() => handleDeleteItem(null, item)} // Updated to pass `null` for member
+                          onPutBack={handlePutBack}
+                      />
+                  ))}
+                </div>
+
+                {/* Members Section */}
+                <div className="members-section p-6 border ml-4">
+                  <h2 className="text-xl font-semibold mb-4">Members</h2>
+                  {members.map((member) => (
+                      <Member
+                          key={member.id}
+                          member={member.username}
+                          onDropItem={handleDropItem}
+                          assignedItems={member.items}
+                          onDeleteItem={handleDeleteItem}
+                          onPutBackItem={handlePutBack}
+                      />
+                  ))}
+                </div>
+              </div>
             </div>
-  
-            <ManualInputModal 
-              isOpen={modalOpen} 
-              onClose={() => setModalOpen(false)} 
-              onAddItem={handleAddItem} 
-            />
-            {/* Displaying Items */}
-            {items.map(item => (
-              <Item
-                key={item.id}
-                id={item.id}
-                name={item.name}
-                amount={item.amount}
-                assignedCount={item.assignedCount}
-                onDelete={() => handleDeleteItem(member, item)} // This line is causing the error
-                onPutBack={handlePutBack}
-              />
-            ))}
-          </div>
-  
-          {/* Members Section */}
-          <div className="members-section p-6 border ml-4">
-            <h2 className="text-xl font-semibold mb-4">Members</h2>
-            {members.map((member) => (
-              <Member
-                key={member.id}
-                member={member.username}
-                onDropItem={handleDropItem}
-                assignedItems={member.items}
-                onDeleteItem={handleDeleteItem}
-                onPutBackItem={handlePutBack}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </DndProvider>
+        )}
+      </DndProvider>
   );
   
 };  
