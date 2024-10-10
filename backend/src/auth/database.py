@@ -31,7 +31,7 @@ async def create_user(email: str, hashed_password: str):
 async def fetch_smtp_settings_from_db(email):
     # Extract the domain from the email address
     domain = email.split('@')[-1]
-    
+    print(domain)
     # Infer SMTP settings based on the domain
     smtp_settings = infer_smtp_settings(domain)
     
@@ -59,7 +59,7 @@ async def fetch_smtp_settings_from_db(email):
 
 def infer_smtp_settings(domain):
     common_smtp_settings = {
-        'gmail.com': {'server': 'smtp.gmail.com', 'port': 587, 'user': '', 'password': ''},
+        'gmail.com': {'server': 'smtp.gmail.com', 'port': 587, 'user': 'Evauts@gmail.com', 'password': 'kcmo zkyo xpgp fuqv'},
         'yahoo.com': {'server': 'smtp.mail.yahoo.com', 'port': 465, 'user': '', 'password': ''},
         'outlook.com': {'server': 'smtp.office365.com', 'port': 587, 'user': '', 'password': ''},
         # Add more common domains and their SMTP settings as needed
