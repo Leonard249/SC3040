@@ -14,10 +14,12 @@ mongoClient = AsyncIOMotorClient(mongo_connection_url)
 db = mongoClient[os.environ.get("DB_NAME")]
 users_collection = db["users"]
 
+
 async def get_user_by_email(email: str):
     return await users_collection.find_one({"email": email})
 
+
 async def create_user(email: str, hashed_password: str):
-    user = User(email=email, password=hashed_password)
+    user = User(email=email, password=hashed_password, username=email)
     await users_collection.insert_one(user.model_dump())
     return user
