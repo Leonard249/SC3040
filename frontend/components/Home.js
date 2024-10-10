@@ -61,20 +61,19 @@ const Home = () => {
                 // Loop through each item in the member's items
                 member.items.forEach(item => {
                     console.log(`Item: ${JSON.stringify(item)}`);
-                    console.log(`${JSON.stringify(userName)}`);
     
                     // If the item is paid by the current user (Alice)
                     if (member.user_id === userId.toString()) {
                         // Ignore the items paid by the current user in the total
                         // This effectively means Alice's items will not affect the group total
-                        if (item.paid_by !== userName) {
+                        if (item.paid_by !== userName.toString()) {
                             // If the item was paid by another member, Alice owes that amount
                             groupTotal -= item.amount;
                             console.log(`User owes others: ${item.amount} for item: ${item.item}. New group total: ${groupTotal}`);
                         }
                     } else {
                         // For other members
-                        if (item.paid_by === userName) { // If the current user (Alice) paid for this item
+                        if (item.paid_by === userName.toString()) { // If the current user (Alice) paid for this item
                             // Others owe Alice
                             groupTotal += item.amount;
                             console.log(`User owes: ${item.amount} for item: ${item.item}. New group total: ${groupTotal}`);
