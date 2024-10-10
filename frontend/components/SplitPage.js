@@ -22,6 +22,13 @@ const Item = ({ id, name, amount, assignedCount, onDelete, onPutBack }) => {
   // Calculate display amount based on assigned count
   const displayAmount = assignedCount > 0 ? (amount / assignedCount).toFixed(2) : amount.toFixed(2);
 
+  const handleDelete = () => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete ${name}?`);
+    if (confirmDelete) {
+      onDelete(id);
+    }
+  };
+
   return (
     <div
       ref={drag}
@@ -29,7 +36,7 @@ const Item = ({ id, name, amount, assignedCount, onDelete, onPutBack }) => {
     >
       <span>{name} - ${displayAmount}</span>
       <div>
-        <button onClick={() => onDelete(id)} className="text-red-500 hover:text-red-700">
+        <button onClick={handleDelete} className="text-red-500 hover:text-red-700">
           <AiOutlineDelete />
         </button>
         {assignedCount > 0 && (
@@ -41,6 +48,7 @@ const Item = ({ id, name, amount, assignedCount, onDelete, onPutBack }) => {
     </div>
   );
 };
+
 
 
 
@@ -68,7 +76,7 @@ const Member = ({ member, onDropItem, assignedItems, onDeleteItem, onPutBackItem
             name={item.name}
             amount={item.amount}
             assignedCount={item.assignedCount}
-            onDelete={() => onDeleteItem(member, item)}
+            onDelete={() => onDeleteItem(member, item)} // Pass member and item
             onPutBack={() => onPutBackItem(item)}
           />
         ))}
@@ -76,6 +84,9 @@ const Member = ({ member, onDropItem, assignedItems, onDeleteItem, onPutBackItem
     </div>
   );
 };
+
+
+
 
 
 
@@ -206,7 +217,7 @@ const SplitPage = () => {
           return m;
         })
       );
-
+  
       setItems((prevItems) =>
         prevItems.map((i) => {
           if (i.id === itemToDelete.id) {
@@ -217,6 +228,7 @@ const SplitPage = () => {
       );
     }
   };
+  
 
   const handlePutBack = (item) => {
     setMembers((prevMembers) => 
@@ -263,7 +275,7 @@ const SplitPage = () => {
           <div className="receipt-section p-6 border">
             <h2 className="text-xl font-semibold mb-4">The receipt you provided</h2>
             <img src="/path/to/receipt-image" alt="Receipt" className="mb-4" />
-
+  
             {/* Buttons Wrapper with Flexbox */}
             <div className="flex gap-4 mb-4"> {/* Added flex and gap for spacing */}
               <button onClick={handleRescan} className="bg-red-500 text-white py-3 px-6 rounded">
@@ -273,7 +285,7 @@ const SplitPage = () => {
                 Add Item Manually
               </button>
             </div>
-
+  
             <ManualInputModal 
               isOpen={modalOpen} 
               onClose={() => setModalOpen(false)} 
@@ -287,12 +299,12 @@ const SplitPage = () => {
                 name={item.name}
                 amount={item.amount}
                 assignedCount={item.assignedCount}
-                onDelete={(id) => handleDeleteItem(memberId, item)}
+                onDelete={() => handleDeleteItem(member.id, item)} // This line is causing the error
                 onPutBack={handlePutBack}
               />
             ))}
           </div>
-
+  
           {/* Members Section */}
           <div className="members-section p-6 border ml-4">
             <h2 className="text-xl font-semibold mb-4">Members</h2>
@@ -311,6 +323,7 @@ const SplitPage = () => {
       </div>
     </DndProvider>
   );
-};
+  
+};  
 
 export default SplitPage;

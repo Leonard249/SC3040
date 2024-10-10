@@ -65,43 +65,47 @@ const Home = () => {
     };
 
     // Function to handle adding a new group
-    const handleAddGroup = async () => {
-        const formattedGroup = {
-            name: newGroup.groupName,
-            users: newGroup.members.map(member => ({
+    // Function to handle adding a new group
+const handleAddGroup = async () => {
+    const formattedGroup = {
+        name: newGroup.groupName,
+        users: newGroup.members
+            .filter(member => member.user_id !== "") // Exclude members with empty user_id
+            .map(member => ({
                 user_id: member.user_id
             })),
-        };
-    
-        console.log("Sending group data:", JSON.stringify(formattedGroup, null, 2));
-    
-        try {
-            const response = await fetch('/api/addGroup', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formattedGroup),
-            });
-    
-            if (response.ok) {
-                const addedGroup = await response.json();
-                setGroups([...groups, addedGroup]);
-                setNewGroup({ groupName: '', members: [{ user_id: userId }] }); // Reset to default with current user
-                setShowForm(false);
-    
-                // Show success notification
-                alert("Group created successfully");
-    
-                // Refresh the page
-                window.location.reload();
-            } else {
-                console.error('Error adding group');
-            }
-        } catch (error) {
-            console.error('Error adding group:', error);
-        }
     };
+
+    console.log("Sending group data:", JSON.stringify(formattedGroup, null, 2));
+
+    try {
+        const response = await fetch('/api/addGroup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formattedGroup),
+        });
+
+        if (response.ok) {
+            const addedGroup = await response.json();
+            setGroups([...groups, addedGroup]);
+            setNewGroup({ groupName: '', members: [{ user_id: userId }] }); // Reset to default with current user
+            setShowForm(false);
+
+            // Show success notification
+            alert("Group created successfully");
+
+            // Refresh the page
+            window.location.reload();
+        } else {
+            console.error('Error adding group');
+        }
+    } catch (error) {
+        console.error('Error adding group:', error);
+    }
+};
+
     
     
     
