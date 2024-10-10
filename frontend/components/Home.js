@@ -19,7 +19,13 @@ const Home = () => {
                 console.log(responseData)
                 const data = responseData.data.data.groups;
                 setGroups(data);
-
+                const groupNames = await Promise.all(
+                    data.map(async (group) => {
+                        const groupName = await getGroupName(group.group_id); // Call getGroupName
+                        return { ...group, group_name: groupName }; // Add group_name to the group object
+                    })
+                );
+                setGroups(groupNames);
                 const foundUser = data.flatMap(group => group.users)
                     .find(member => member.user_id === userId.toString());
 
@@ -133,6 +139,15 @@ const handleAddGroup = async () => {
         );
         setNewGroup({ ...newGroup, members: updatedMembers });
     };
+            const getGroupName = async (groupId) => {
+        try {
+            const response = await apiClient.get(`/v1/get/get-group-name/${groupId}`);
+            return response.data.group_name;
+        } catch (error) {
+            console.error('Error fetching group name:', error);
+            return null; // Return null in case of an error
+        }
+        };
 
     // Calculate total owed across all groups
     const totalAmountOwed = Object.values(totalOwed).reduce((acc, amount) => acc + amount, 0);
@@ -160,7 +175,7 @@ const handleAddGroup = async () => {
 
                             return (
                                 <li key={groupId} className="mb-2">
-                                    {group.group_id}: {owedAmount === 0 
+                                    {group.group_name}: {owedAmount === 0 
                                         ? '$0.00' 
                                         : `${owedAmount > 0 ? '+' : '-'} $${Math.abs(owedAmount).toFixed(2)}`}
                                 </li>
