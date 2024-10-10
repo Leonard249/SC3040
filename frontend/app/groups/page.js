@@ -4,11 +4,15 @@ import React, { useEffect, useState } from "react";
 import "./style.css";
 import { useRouter } from "next/navigation";
 import AddMember from "@/app/groups/createGroup";
+import { GROUP_USER_ITEM } from "../../lib/constant"; // Import the GROUP_USER_ITEM constant
+import EditAllocationPage from "./edit-allocation/page"; // Adjust path as necessary
 
 const GroupPage = () => {
+  const userId = "6706087b1143dcab37a70f34"; // Assume this is current user
   const router = useRouter();
   const [selectedGroup, setSelectedGroup] = useState(""); // Initialize selectedGroup with an empty string
   const [groups, setGroups] = useState([]);
+  const [userName, setUserName] = useState("");
 
   const handleRedirect = (path) => {
     localStorage.setItem("selectedGroup", selectedGroup);
@@ -20,16 +24,31 @@ const GroupPage = () => {
   };
 
   useEffect(() => {
-    fetch("/aswe.json")
-      .then((response) => response.json())
-      .then((data) => {
-        setGroups(data);
-        setSelectedGroup(Object.keys(data)[0]); // Set default selected group after fetching
-      })
-      .catch((error) => console.error("Error fetching groups:", error));
+    const data = GROUP_USER_ITEM.data.groups;
+    setGroups(data);
+
+    let foundUser = false;
+    data.forEach((group) => {
+      group.users.forEach((member) => {
+        if (member.user_id === userId.toString()) {
+          setUserName(member.memberName);
+          foundUser = true;
+        }
+      });
+    });
+
+    if (!foundUser) {
+      console.warn("User not found");
+    }
+
+    if (data.length > 0) {
+      setSelectedGroup(data[0].group_id); // Set default selected group after fetching
+    }
   }, []);
 
-  const currentGroup = groups[selectedGroup] || {};
+  const currentGroup =
+    groups.find((group) => group.group_id === selectedGroup) || {};
+
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <div className="group-select">
@@ -43,9 +62,9 @@ const GroupPage = () => {
           className="group-dropdown"
         >
           <option value="">Select a Group</option>
-          {Object.keys(groups).map((groupKey) => (
-            <option key={groupKey} value={groupKey}>
-              {groups[groupKey].group_name}
+          {groups.map((group) => (
+            <option key={group.group_id} value={group.group_id}>
+              {group.group_id}
             </option>
           ))}
         </select>
@@ -56,32 +75,31 @@ const GroupPage = () => {
             <div className="row-left">
               <span className="grouppage-font">Group Name:</span>
               <span className="grouppage-font">
-                {currentGroup.group_name || "No group selected"}
+                {currentGroup.group_id || "No group selected"}
               </span>
             </div>
             <div className="row-right">
-              <img src="logo.svg" className="logo"></img>
+              <img src="logo.svg" className="logo" alt="Logo"></img>
               <span className="group-id">#{selectedGroup}</span>
             </div>
           </div>
           <div className="content">
             <p>Activity:</p>
-            <p>BlueBird1 paid S$1 for bahkutteh</p>
-            <p>BlueBird2 paid S$1 for bahkutteh</p>
-            <p>BlueBird3 paid S$1 for bahkutteh</p>
-            <p>BlueBird4 paid S$1 for bahkutteh</p>
-            <p>BlueBird5 paid S$1 for bahkutteh</p>
-            <p>BlueBird6 paid S$1 for bahkutteh</p>
-            <p>BlueBird7 paid S$1 for bahkutteh</p>
-            <p>BlueBird8 paid S$1 for bahkutteh</p>
-            <p>BlueBird9 paid S$1 for bahkutteh</p>
+            {currentGroup.users &&
+              currentGroup.users.map((user) =>
+                user.items.map((item) => (
+                  <p key={item.id}>
+                    {user.memberName} paid S${item.amount} for {item.item}
+                  </p>
+                ))
+              )}
           </div>
           <div style={{ display: "flex", flexDirection: "row" }}>
             <button
               className="settle-up"
               onClick={() => handleRedirect("/groups/edit-allocation")}
             >
-              Edit Allocation
+              View Allocation
             </button>
             <button
               className="settle-up"
@@ -93,15 +111,19 @@ const GroupPage = () => {
         </div>
         <div className="right-box">
           <p className="grouppage-font">Members:</p>
-          {selectedGroup &&
-            currentGroup &&
-            Object.values(currentGroup.members).map((member, idx) => (
+          {currentGroup.users &&
+            currentGroup.users.map((member, idx) => (
               <div key={idx} className="member-row">
-                <img src="avatar.svg"></img>
+                <img
+                  src="avatar.svg"
+                  alt={`${member.memberName}'s avatar`}
+                ></img>
                 <span className="grouppage-font">{member.memberName}</span>
               </div>
             ))}
-          {selectedGroup && currentGroup && <AddMember group_id={selectedGroup}/>}
+          {selectedGroup && currentGroup && (
+            <AddMember group_id={selectedGroup} />
+          )}
         </div>
       </div>
     </div>
