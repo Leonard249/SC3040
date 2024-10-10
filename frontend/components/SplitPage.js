@@ -191,44 +191,61 @@ const SplitPage = () => {
 
     // Function to fetch group members
     const fetchMembers = () => {
-      //TODO: convert groupId
-      let groupId = "670761b7f7d1a0abedfdb6e8"
+      // TODO: convert groupId
+      let groupId = "670761b7f7d1a0abedfdb6e8";
       return apiClient.get(`/v1/groups/get_user/${groupId}`);
     };
 
-    // Execute both API requests in parallel using Promise.all
-    Promise.all([ocrScan(), fetchMembers()])
-        .then(([ocrResponse, membersResponse]) => {
-          // Handle OCR Scan response
-          if (ocrResponse.status === 200) {
-            const formattedItems = ocrResponse.data.data.map((item, index) => ({
-              id: index + 1,
-              name: item.item,
-              amount: item.price,
-              assignedCount: 0,
-            }));
-            setItems(formattedItems);
-            alert('OCR Scan Successful');
-          } else {
-            alert('OCR Scan Failed');
-          }
+    // Function to fetch username from userId
+    const fetchUsername = (userId) => {
+      return apiClient.get(`/v1/get/get-username-from-id/${userId}`);
+    };
 
-          // Handle Members response
-          if (Array.isArray(membersResponse.data.data)) {
-            const formattedMembers = membersResponse.data.data.map((member) => ({
-              id: member._id,
-              username: member.username,
-              items: [],
-            }));
-            setMembers(formattedMembers);
-          } else {
-            console.error("membersResponse.data is not an array:", membersResponse.data);
-          }
-        })
-        .catch((error) => {
-          console.error('Error occurred during API requests:', error);
-        });
+    // Async function inside useEffect to handle promises with await
+    const fetchData = async () => {
+      try {
+        // Execute both API requests in parallel
+        const [ocrResponse, membersResponse] = await Promise.all([ocrScan(), fetchMembers()]);
+
+        // Handle OCR Scan response
+        if (ocrResponse.status === 200) {
+          const formattedItems = ocrResponse.data.data.map((item, index) => ({
+            id: index + 1,
+            name: item.item,
+            amount: item.price,
+            assignedCount: 0,
+          }));
+          setItems(formattedItems);
+          alert('OCR Scan Successful');
+        } else {
+          alert('OCR Scan Failed');
+        }
+
+        // Handle Members response and fetch usernames
+        if (Array.isArray(membersResponse.data.data)) {
+          const membersWithNames = await Promise.all(
+            membersResponse.data.data.map(async (member) => {
+              const usernameResponse = await fetchUsername(member._id);
+              return {
+                id: member._id,
+                username: usernameResponse.data.username,
+                items: [],
+              };
+            })
+          );
+          setMembers(membersWithNames);
+        } else {
+          console.error("membersResponse.data is not an array:", membersResponse.data);
+        }
+      } catch (error) {
+        console.error('Error occurred during API requests:', error);
+      }
+    };
+
+    // Call the async function
+    fetchData();
   }, [groupId]);
+
 
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -236,7 +253,7 @@ const SplitPage = () => {
     setMembers((prevMembers) =>
       prevMembers.map((m) => {
         console.log(m)
-        if (m.id === member) {
+        if (m.username === member) {
           const existingItem = m.items.find(i => i.id === item.id);
           if (!existingItem) {
             return { ...m, items: [...m.items, { ...item, assignedCount: 1 }] };
@@ -256,12 +273,12 @@ const SplitPage = () => {
     setItems((prevItems) => prevItems.filter(i => i.id !== item.id));
   };
 
-  const handleDeleteItem = (memberId, itemToDelete) => {
+  const handleDeleteItem = (member, itemToDelete) => {
     const confirmDelete = window.confirm(`Are you sure you want to delete ${itemToDelete.name}?`);
     if (confirmDelete) {
       setMembers((prevMembers) =>
         prevMembers.map((m) => {
-          if (m.id === memberId) {
+          if (m.username === member) {
             return {
               ...m,
               items: m.items.filter(i => i.id !== itemToDelete.id),
@@ -352,7 +369,7 @@ const SplitPage = () => {
                 name={item.name}
                 amount={item.amount}
                 assignedCount={item.assignedCount}
-                onDelete={() => handleDeleteItem(member.id, item)} // This line is causing the error
+                onDelete={() => handleDeleteItem(member, item)} // This line is causing the error
                 onPutBack={handlePutBack}
               />
             ))}
@@ -364,7 +381,7 @@ const SplitPage = () => {
             {members.map((member) => (
               <Member
                 key={member.id}
-                member={member.id}
+                member={member.username}
                 onDropItem={handleDropItem}
                 assignedItems={member.items}
                 onDeleteItem={handleDeleteItem}

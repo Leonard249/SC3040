@@ -26,7 +26,7 @@ async def get_group_name(group_id: str):
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
 
-    return {"group_name": group["name"]}
+    return {"group_name": group['name']}
 
 
 @router.get("/get-group-id/{group_name}",
@@ -40,7 +40,7 @@ async def get_group_id(group_name: str):
 
     return {"group_id": str(group["_id"])}
 
-@router.post("/get-username-from-id/{user_id}",
+@router.get("/get-username-from-id/{user_id}",
              response_description="Get username and email from user id",)
 async def get_user_id(user_id: str):
     # Find the group with the given group_name
@@ -54,7 +54,7 @@ async def get_user_id(user_id: str):
 
 
 
-@router.post("/get-user-id-from-username/{username}",
+@router.get("/get-user-id-from-username/{username}",
              response_description="Get user ID from username",)
 async def get_user_id_from_username(username: str):
     # Find the user with the given username
@@ -66,7 +66,7 @@ async def get_user_id_from_username(username: str):
     return {"user_id": str(user["_id"])}
 
 
-@router.post("/get-user-id-from-email/{email}",
+@router.get("/get-user-id-from-email/{email}",
              response_description="Get user ID from email",)
 async def get_user_id_from_email(email: str):
     # Find the user with the given email
