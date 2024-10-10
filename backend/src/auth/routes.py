@@ -9,7 +9,7 @@ from src.auth.database import get_user_by_email, create_user, send_reset_email, 
 ROUTE_PREFIX = "/" + os.getenv("EXPENSE_SERVICE_VERSION") + "/auth"
 router = APIRouter(prefix=ROUTE_PREFIX, tags=["auth-service"])
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
