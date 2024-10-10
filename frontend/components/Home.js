@@ -14,30 +14,25 @@ const Home = () => {
         // Use the data from GROUP_USER_ITEM directly
         const data = GROUP_USER_ITEM.data.groups;
         setGroups(data);
-        calculateTotalOwed(data);
 
         // Find the user's name based on userId
-        let foundUser = false;
+        const foundUser = data.flatMap(group => group.users)
+                               .find(member => member.user_id === userId.toString());
 
-        // Loop through each group to find the user
-        data.forEach(group => {
-            group.users.forEach(member => {
-                if (member.user_id === userId.toString()) {
-                    setUserName(member.memberName);  // Set the user's name in state
-                    foundUser = true;
-                }
-            });
-        });
-
-        // Optional: If no user was found, handle it
-        if (!foundUser) {
+        if (foundUser) {
+            setUserName(foundUser.memberName);
+        } else {
             console.warn('User not found');
         }
     }, []);
 
-    const handleNavigate = () => {
-        router.push(`/scan-receipt?userId=${userId}`);
-    };
+    useEffect(() => {
+        if (userName) {
+            // Call calculateTotalOwed only after userName has been set
+            const data = GROUP_USER_ITEM.data.groups; // Get the data again if needed
+            calculateTotalOwed(data);
+        }
+    }, [userName]);
 
     const calculateTotalOwed = (data) => {
         let owed = {};
@@ -46,49 +41,46 @@ const Home = () => {
         data.forEach(group => {
             let groupTotal = 0;
             let userInGroup = false; // Flag to check if the user is part of the group
-    
+
             console.log(`Calculating for group: ${group.group_id}`);
-    
+
             // Loop through each member in the group
             group.users.forEach(member => {
                 console.log(`Processing member: ${member.memberName}, items: ${member.items}`);
-    
+
                 // Check if the current user is in this group
                 if (member.user_id === userId.toString()) {
                     userInGroup = true;
                 }
-    
+
                 // Loop through each item in the member's items
                 member.items.forEach(item => {
                     console.log(`Item: ${JSON.stringify(item)}`);
-    
-                    // If the item is paid by the current user (Alice)
-                    if (member.user_id === userId.toString()) {
+
+                    // If the item is paid by the current user (userName)
+                    if (member.user_id === userId) {
                         // Ignore the items paid by the current user in the total
-                        // This effectively means Alice's items will not affect the group total
-                        if (item.paid_by !== userName.toString()) {
-                            // If the item was paid by another member, Alice owes that amount
-                            groupTotal -= item.amount;
+                        if (item.paid_by !== userName) {
+                            groupTotal -= item.amount; // Alice owes for this item
                             console.log(`User owes others: ${item.amount} for item: ${item.item}. New group total: ${groupTotal}`);
                         }
                     } else {
                         // For other members
-                        if (item.paid_by === userName.toString()) { // If the current user (Alice) paid for this item
-                            // Others owe Alice
-                            groupTotal += item.amount;
+                        if (item.paid_by === userName) { // If the current user paid for this item
+                            groupTotal += item.amount; // Others owe Alice
                             console.log(`User owes: ${item.amount} for item: ${item.item}. New group total: ${groupTotal}`);
                         }
                     }
                 });
             });
-    
+
             // If the user was found in the group, update the owed object for that group
             if (userInGroup) {
                 owed[group.group_id] = groupTotal;
                 console.log(`Final group total for ${group.group_id}: ${groupTotal}`);
             }
         });
-    
+
         setTotalOwed(owed);
         return owed; // Return the total amount owed across all groups
     };
@@ -98,45 +90,54 @@ const Home = () => {
     
     
 
-    // Function to handle adding a new group
-    const handleAddGroup = async () => {
-        try {
-            const response = await fetch('/api/addGroup', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newGroup),
-            });
-
-            if (response.ok) {
-                const addedGroup = await response.json();
-                setGroups([...groups, addedGroup]);  // Append new group to groups state
-                setNewGroup({ groupName: '', members: [{ memberName: '', accountId: '' }] });
-                setShowForm(false);
-            } else {
-                console.error('Error adding group');
-            }
-        } catch (error) {
-            console.error('Error adding group:', error);
-        }
+   // Function to handle adding a new group
+const handleAddGroup = async () => {
+    // Construct the new group object in the desired format
+    const formattedGroup = {
+        name: newGroup.groupName,
+        users: newGroup.members.map(member => ({
+            user_id: member.user_id // Assuming you have a way to capture or get user_id
+        })),
     };
 
-    // Function to add a new member input field
-    const addMember = () => {
-        setNewGroup({
-            ...newGroup,
-            members: [...newGroup.members, { memberName: ''}],
+    try {
+        const response = await fetch('/api/addGroup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formattedGroup),
         });
-    };
 
-    // Function to handle changes in member input
-    const handleMemberChange = (index, field, value) => {
-        const updatedMembers = newGroup.members.map((member, i) =>
-            i === index ? { ...member, [field]: value } : member
-        );
-        setNewGroup({ ...newGroup, members: updatedMembers });
-    };
+        if (response.ok) {
+            const addedGroup = await response.json();
+            setGroups([...groups, addedGroup]); // Append new group to groups state
+            setNewGroup({ groupName: '', members: [{ user_id: '' }] }); // Reset the newGroup state
+            setShowForm(false);
+        } else {
+            console.error('Error adding group');
+        }
+    } catch (error) {
+        console.error('Error adding group:', error);
+    }
+};
+
+// Function to add a new member input field
+const addMember = () => {
+    setNewGroup({
+        ...newGroup,
+        members: [...newGroup.members, { user_id: '' }], // Changed memberName to user_id
+    });
+};
+
+// Function to handle changes in member input
+const handleMemberChange = (index, value) => {
+    const updatedMembers = newGroup.members.map((member, i) =>
+        i === index ? { ...member, user_id: value } : member // Update user_id directly
+    );
+    setNewGroup({ ...newGroup, members: updatedMembers });
+};
+
 
 
     // Calculate total owed across all groups
@@ -163,7 +164,7 @@ const Home = () => {
                             <li key={groupId} className="mb-2">
                                 {group.group_id}: {owedAmount === 0 
                                     ? '$0.00' 
-                                    : `${owedAmount > 0 ? '-' : '+'} $${Math.abs(owedAmount).toFixed(2)}`}
+                                    : `${owedAmount > 0 ? '+' : '-'} $${Math.abs(owedAmount).toFixed(2)}`}
                             </li>
                         );
                     })}
@@ -173,7 +174,7 @@ const Home = () => {
 
 
             <div className="w-1/2"> {/* Center the add group form */}
-                <h2 className="text-2xl font-bold mb-4">Total expenses: {totalAmountOwed === 0 ? '$0.00' : `${totalAmountOwed > 0 ? '-' : '+'}$${Math.abs(totalAmountOwed).toFixed(2)}`}</h2>
+                <h2 className="text-2xl font-bold mb-4">Total expenses: {totalAmountOwed === 0 ? '$0.00' : `${totalAmountOwed > 0 ? '+' : '-'}$${Math.abs(totalAmountOwed).toFixed(2)}`}</h2>
                 {totalAmountOwed === 0 ? (
                     <p>You're all settled up. Awesome!</p>
                 ) : (
@@ -203,13 +204,14 @@ const Home = () => {
                             <div key={index} className="flex mb-4">
                                 <input
                                     type="text"
-                                    placeholder="Member Name"
-                                    value={member.memberName}
-                                    onChange={(e) => handleMemberChange(index, 'memberName', e.target.value)}
+                                    placeholder="User ID"
+                                    value={member.user_id}
+                                    onChange={(e) => handleMemberChange(index, e.target.value)}
                                     className="block w-1/2 mr-2 p-2 border border-gray-300 rounded"
                                 />
                             </div>
                         ))}
+
 
                         {/* Button to add more members */}
                         <button
