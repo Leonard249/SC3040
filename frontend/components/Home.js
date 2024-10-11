@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { GROUP_USER_ITEM, ALL_USERS } from '../lib/constant';
-import axios from "axios";
 import apiClient from "@/app/axios"; // Import the GROUP_USER_ITEM and ALL_USERS constants
+import Link from 'next/link';
+
 
 const Home = () => {
     //TODO: USERID
@@ -179,29 +179,38 @@ const handleAddGroup = async () => {
             <h1 className="text-2xl font-bold mb-4">Welcome {userName || 'User'}</h1>
             <div className="w-1/2 mb-8">
                 <h2 className="text-2xl font-bold mb-4">Groups:</h2>
-                <div className="border border-black p-4 rounded-lg bg-gray-100">
-                    <ul className="list-none p-0">
-                        {Object.keys(groups).filter(groupId => {
-                            const group = groups[groupId];
-                            return group.users.some(member => member.user_id === userId.toString());
-                        }).map(groupId => {
-                            const group = groups[groupId];
-                            const owedAmount = totalOwed[group.group_id] || 0;
+                    {Object.keys(groups).filter(groupId => {
+                        const group = groups[groupId];
+                        return group.users.some(member => member.user_id === userId.toString());
+                    }).map(groupId => {
+                        const group = groups[groupId];
+                        const owedAmount = totalOwed[group.group_id] || 0;
 
-                            return (
-                                <li key={groupId} className="mb-2">
-                                    {group.group_name}: {owedAmount === 0 
-                                        ? '$0.00' 
-                                        : `${owedAmount > 0 ? '+' : '-'} $${Math.abs(owedAmount).toFixed(2)}`}
-                                </li>
-                            );
-                        })}
-                    </ul>
-                </div>
+                        return (
+                            <div
+                                key={groupId}
+                                className="mb-4 p-4 rounded border border-gray-300 bg-yellow-100 shadow-md" // Light yellow background and shadow
+                            >
+                                <Link href={`/groups`}>
+                                    <div className="flex justify-between items-center" onClick={() => {
+                                        localStorage.setItem('selectedGroupId', group.group_id);
+                                    }}>
+                                        <h3 className="text-lg font-semibold">{group.group_name}</h3>
+                                        <p className="text-sm">
+                                            {owedAmount === 0
+                                                ? '$0.00'
+                                                : `${owedAmount > 0 ? '+' : '-'} $${Math.abs(owedAmount).toFixed(2)}`}
+                                        </p>
+                                    </div>
+                                </Link>
+                            </div>
+                        );
+                    })}
             </div>
 
             <div className="w-1/2">
-                <h2 className="text-2xl font-bold mb-4">Total expenses: {totalAmountOwed === 0 ? '$0.00' : `${totalAmountOwed > 0 ? '+' : '-'}$${Math.abs(totalAmountOwed).toFixed(2)}`}</h2>
+                <h2 className="text-2xl font-bold mb-4">Total
+                    expenses: {totalAmountOwed === 0 ? '$0.00' : `${totalAmountOwed > 0 ? '+' : '-'}$${Math.abs(totalAmountOwed).toFixed(2)}`}</h2>
                 {totalAmountOwed === 0 ? (
                     <p>You&#39;re all settled up. Awesome!</p>
                 ) : (

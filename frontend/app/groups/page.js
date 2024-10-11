@@ -80,6 +80,10 @@ const GroupPage = () => {
       }
     };
 
+    if (localStorage.getItem('selectedGroupId')) {
+      setSelectedGroup(localStorage.getItem('selectedGroupId'))
+    }
+
     fetchData(); // Call the async function inside useEffect
   }, []); // Run only once on mount
 
