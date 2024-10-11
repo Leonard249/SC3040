@@ -70,8 +70,7 @@ const ScanReceipt = () => {
         if (droppedFile) {
             // Navigate to the next page if the group is selected, passing the selected group ID
             const groupId = await apiClient.get(`/v1/get/get-group-id/${selectedGroup}`);
-            console.log(groupId);
-            router.push(`/split-page?groupId=${groupId.data}`);
+            router.push(`/split-page?groupId=${groupId.data.group_id}`);
         }
     };
 
@@ -116,7 +115,6 @@ const ScanReceipt = () => {
               // Now you can use this base64String for further processing
               localStorage.setItem('base64File', base64String); // Store in localStorage
               const groupId = await apiClient.get(`/v1/get/get-group-id/${selectedGroup}`);
-              console.log(groupId);
               router.push(`/split-page?groupId=${groupId.data.group_id}`);
           });
           // Navigate to the next page if the group is selected, passing the selected group ID

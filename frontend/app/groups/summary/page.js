@@ -93,53 +93,56 @@ const GroupSummaryPage = () => {
   };
 
   return (
-    <div className="summary-page">
-      <div className="box content">
-        <div
-          style={{ display: "flex", flexDirection: "column", padding: "20px" }}
-        >
-          <p className="content">Total:</p>
-          {Object.entries(owedAmounts).map(([member, amount]) => (
-            <p key={member}>
-              You owe {member} ${amount.toFixed(2)}
-            </p>
-          ))}
-        </div>
-      </div>
-      <div className="box content">
-        <div
-          style={{ display: "flex", flexDirection: "column", padding: "20px" }}
-        >
-          <p className="content">Payment:</p>
-          {Object.entries(owedAmounts).map(([member, amount]) => (
-            <div key={member} style={{ marginBottom: "10px" }}>
-              <span>
-                {member} owes ${amount.toFixed(2)}
-              </span>
-              <button
-                className="payment-button"
-                onClick={() => handlePaymentClick(member)}
-              >
-                Payment
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Modal for Payment */}
-      {isModalOpen && (
-        <div className="modal">
-          <div className="modal-content">
-            <span className="close" onClick={closeModal}>
-              &times;
-            </span>
-            <img src="/paymentqr.jpg" />
+      <div className="summary-page flex justify-center items-start gap-8 p-10 min-h-screen">
+        {/* Total Owed Box */}
+        <div className="box bg-yellow-100 border border-yellow-400 p-6 rounded-lg shadow-lg w-1/3">
+          <div className="flex flex-col">
+            <p className="text-2xl font-bold mb-4">Total:</p>
+            {Object.entries(owedAmounts).map(([member, amount]) => (
+                <p key={member} className="text-lg mb-2 py-1.5">
+                  You owe <span className="font-semibold">{member}</span> ${amount.toFixed(2)}
+                </p>
+            ))}
           </div>
         </div>
-      )}
-    </div>
+
+        {/* Payment Box */}
+        <div className="box bg-yellow-100 border border-yellow-400 p-6 rounded-lg shadow-lg w-1/3">
+          <div className="flex flex-col">
+            <p className="text-2xl font-bold mb-4">Payment:</p>
+            {Object.entries(owedAmounts).map(([member, amount]) => (
+                <div key={member} className="flex items-center justify-between mb-4">
+            <span className="text-lg">
+              <span className="font-semibold">{member}</span> owes ${amount.toFixed(2)}
+            </span>
+                  <button
+                      className="ml-4 py-2 px-4 bg-green-500 text-white rounded-md shadow hover:bg-green-600 transition duration-200"
+                      onClick={() => handlePaymentClick(member)}
+                  >
+                    Payment
+                  </button>
+                </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Modal for Payment */}
+        {isModalOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+              <div className="modal-content bg-white p-8 rounded-lg shadow-lg">
+          <span
+              className="close text-2xl cursor-pointer text-gray-600 absolute top-4 right-4"
+              onClick={closeModal}
+          >
+            &times;
+          </span>
+                <img src="/paymentqr.jpg" className="w-64 h-64" alt="QR Code" />
+              </div>
+            </div>
+        )}
+      </div>
   );
+
 };
 
 export default GroupSummaryPage;

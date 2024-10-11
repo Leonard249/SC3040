@@ -179,6 +179,8 @@ const handleAddGroup = async () => {
             <h1 className="text-2xl font-bold mb-4">Welcome {userName || 'User'}</h1>
             <div className="w-1/2 mb-8">
                 <h2 className="text-2xl font-bold mb-4">Groups:</h2>
+                <div className="border-2 border-black p-4 rounded-lg"> {/* Outer container with black border wrapping only group elements */}
+
                     {Object.keys(groups).filter(groupId => {
                         const group = groups[groupId];
                         return group.users.some(member => member.user_id === userId.toString());
@@ -206,6 +208,7 @@ const handleAddGroup = async () => {
                             </div>
                         );
                     })}
+                </div>
             </div>
 
             <div className="w-1/2">

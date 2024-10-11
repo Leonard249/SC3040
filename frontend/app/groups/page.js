@@ -122,41 +122,50 @@ const GroupPage = () => {
         </select>
       </div>
       <div style={{ display: "flex", flexDirection: "row" }}>
-        <div className="left-box">
-          <div className="top-row">
-            <div className="row-left">
-              <span className="grouppage-font">Group Name:</span>
-              <span className="grouppage-font">
-                {currentGroup.group_name || "No group selected"}
-              </span>
+        <div className="left-box bg-yellow-100 shadow-md rounded-lg p-6 max-w-3xl mx-auto">
+          {/* Header Section */}
+          <div className="top-row flex justify-between items-center mb-4">
+            <div className="row-left flex space-x-2 items-center">
+              <span className="text-xl font-bold">Group Name:</span>
+              <span className="text-xl font-semibold">
+        {currentGroup.group_name || "No group selected"}
+      </span>
             </div>
-            <div className="row-right">
-              <img src="logo.svg" className="logo" alt="Logo"></img>
-              <span className="group-id">#{selectedGroup}</span>
+            <div className="row-right flex items-center">
+              <img src="logo.svg" className="logo w-8 h-8 mr-2" alt="Logo"/>
+              <span className="group-id font-semibold text-sm">#{selectedGroup}</span>
             </div>
           </div>
-          <div className="content">
-            <p>Activity:</p>
-            {currentGroup.users &&
-              currentGroup.users.map((user) =>
-                user.items.map((item) => (
-                  <p key={item.id}>
-                    {user.memberName} bought {item.item} for S${item.amount}{" "}
-                    paid for by {userMap[item.paid_by]}
-                  </p>
-                ))
-              )}
+
+          {/* Activity Section */}
+          <div className="content mb-6">
+            <p className="font-semibold text-lg">Activity:</p>
+            <div className="activity-list mt-2 space-y-2 text-sm">
+              {currentGroup.users &&
+                  currentGroup.users.map((user) =>
+                      user.items.map((item) => (
+                          <p key={item.id}>
+                            <span className="font-bold">{user.memberName}</span> bought
+                            <span className="font-semibold"> {item.item}</span> for
+                            <span className="font-semibold"> S${item.amount}</span>, paid for by
+                            <span className="font-semibold"> {userMap[item.paid_by]}</span>
+                          </p>
+                      ))
+                  )}
+            </div>
           </div>
-          <div style={{ display: "flex", flexDirection: "row" }}>
+
+          {/* Buttons Section */}
+          <div className="flex justify-center space-x-4 mt-6">
             <button
-              className="settle-up"
-              onClick={() => handleRedirect("/groups/edit-allocation")}
+                className="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 transition"
+                onClick={() => handleRedirect("/groups/edit-allocation")}
             >
               Edit Allocation
             </button>
             <button
-              className="settle-up"
-              onClick={() => handleRedirect("/groups/summary")}
+                className="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition"
+                onClick={() => handleRedirect("/groups/summary")}
             >
               Settle up!
             </button>
@@ -165,17 +174,17 @@ const GroupPage = () => {
         <div className="right-box">
           <p className="grouppage-font">Members:</p>
           {currentGroup.users &&
-            currentGroup.users.map((member, idx) => (
-              <div key={idx} className="member-row">
-                <img
-                  src="avatar.svg"
-                  alt={`${member.memberName}'s avatar`}
-                ></img>
-                <span className="grouppage-font">{member.memberName}</span>
-              </div>
-            ))}
+              currentGroup.users.map((member, idx) => (
+                  <div key={idx} className="member-row">
+                    <img
+                        src="avatar.svg"
+                        alt={`${member.memberName}'s avatar`}
+                    ></img>
+                    <span className="grouppage-font">{member.memberName}</span>
+                  </div>
+              ))}
           {selectedGroup && currentGroup && (
-            <AddMember group_id={selectedGroup} />
+              <AddMember group_id={selectedGroup}/>
           )}
         </div>
       </div>
