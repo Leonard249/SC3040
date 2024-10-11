@@ -104,7 +104,7 @@ const GroupPage = () => {
   return (
       <div className="flex flex-col items-center justify-center min-h-screen p-10 space-y-8"> {/* Centered main container */}
       <div className="group-select">
-        <label htmlFor="group-dropdown" className="grouppage-font">
+        <label htmlFor="group-dropdown" className="font-bold">
           Select Group:
         </label>
         <select
@@ -127,13 +127,13 @@ const GroupPage = () => {
           <div className="top-row flex justify-between items-center mb-4">
             <div className="row-left flex space-x-2 items-center">
               <span className="text-xl font-bold">Group Name:</span>
-              <span className="text-xl font-semibold">
+              <span className="text-xl">
         {currentGroup.group_name || "No group selected"}
       </span>
             </div>
             <div className="row-right flex items-center">
               <img src="logo.svg" className="logo w-8 h-8 mr-2" alt="Logo"/>
-              <span className="group-id font-semibold text-sm">#{selectedGroup}</span>
+              <span className="group-id text-sm">#{selectedGroup}</span>
             </div>
           </div>
 
@@ -171,8 +171,8 @@ const GroupPage = () => {
             </button>
           </div>
         </div>
-        <div className="right-box">
-          <p className="grouppage-font">Members:</p>
+        <div className="right-box flex flex-col gap-4">
+          <p className="font-bold">Members:</p>
           {currentGroup.users &&
               currentGroup.users.map((member, idx) => (
                   <div key={idx} className="member-row">

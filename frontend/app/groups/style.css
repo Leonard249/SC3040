@@ -28,13 +28,6 @@
   gap: 5px;
 }
 
-.grouppage-font {
-  font-family: "Josefin Slab";
-  font-weight: bold;
-  font-size: 24px;
-  margin-right: 10px;
-}
-
 .row-right {
   display: flex;
   align-items: center;
