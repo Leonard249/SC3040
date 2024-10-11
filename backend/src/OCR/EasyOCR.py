@@ -34,7 +34,7 @@ class EasyOCRReader:
         print(ocr_output)
         # Regular expression to find items with potential price formats
         # Adjusted pattern to better capture prices in various formats
-        headers = ["QTY", "Qly", "Quantity", "Description", "Amount", "QTY Description Amount","Oty","Descript","Descript"]
+        headers = ["Descr","ipt","ion","QTY", "Qly", "Quantity", "Description", "Amount", "QTY Description Amount","Oty","Descript","Descript"]
 
         # Normalize and remove possible headers from the output
         for header in headers:

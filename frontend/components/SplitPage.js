@@ -364,7 +364,7 @@ const SplitPage = () => {
     };
 
     //TODO: USERID
-    transformedData.items.forEach(item => item.paid_by = "6706087b1143dcab37a70f35"); // Set to a static value or adjust as needed
+    transformedData.items.forEach(item => item.paid_by = "6706087b1143dcab37a70f34"); // Set to a static value or adjust as needed
 
     try {
       const response = await apiClient.post('/v1/expense', transformedData, {
@@ -375,7 +375,7 @@ const SplitPage = () => {
 
       if (response.status === 200) { // Check for success using response status
 
-        alert("Group created successfully");
+        alert("Expenses submitted successfully");
 
         window.location.href = '/';
       } else {

@@ -6,13 +6,26 @@ import apiClient from "@/app/axios"; // Import the GROUP_USER_ITEM constant
 
 const GroupSummaryPage = () => {
   //TODO: USERID
-  const userId = "6706087b1143dcab37a70f35"; // Assume this is current user
+  const userId = "6706087b1143dcab37a70f34"; // Assume this is current user
 
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [groups, setGroups] = useState([]);
   const [userName, setUserName] = useState("");
   const [owedAmounts, setOwedAmounts] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+  const [userMap, setUserMap] = useState({});
+
+
+  // Function to save user_id and memberName
+  const saveUserMapping = (userId, memberName) => {
+    if (!userId || !memberName) {
+      console.error("Both userId and memberName are required.");
+      return;
+    }
+
+    userMap[userId] = memberName; // Save the mapping
+    setUserMap(userMap);
+  };
 
   useEffect(() => {
 
@@ -20,9 +33,16 @@ const GroupSummaryPage = () => {
       let responseData = await apiClient.get(`/v1/expense/all/${userId}`);
       const data = responseData.data.data.groups;
       setGroups(data);  // This updates the state, but won't immediately reflect in `groups`
+      data.forEach((group) => {
+        group.users.forEach((user) => {
+          saveUserMapping(user.user_id, user.memberName);
+        });
+      });
     };
 
     updateGroups(); // Call the async function inside useEffect
+
+
   }, []); // Run only once on mount
 
   // This effect will run whenever the `groups` state is updated
@@ -52,12 +72,20 @@ const GroupSummaryPage = () => {
 
     if (!group) return {};
 
-    const owedAmounts = {};
-    group.users.forEach((user) => {
-      owedAmounts[user.memberName] = 0; // Start with zero owed
-    });
 
-    group.users.forEach((user) => {
+    const forUser = group.users.find(
+        (u) => u.user_id === userId
+    )
+
+    const owedAmounts = {};
+    forUser.items.forEach((item) => {
+      owedAmounts[item.paid_by] = 0; // Start with zero owed
+    });
+    forUser.items.forEach((item) => {
+      owedAmounts[item.paid_by] += item.amount;
+    })
+
+    /*group.users.forEach((user) => {
       user.items.forEach((item) => {
         if (item === []) {
           return
@@ -66,8 +94,8 @@ const GroupSummaryPage = () => {
           (u) => u.user_id === item.paid_by
         )?.memberName;
 
-        if (payerName && payerName !== user.memberName) {
-          owedAmounts[user.memberName] += item.amount; // Add to what this user owes
+        if (payerName && payerName !== userId) {
+          owedAmounts[payerName] += item.amount; // Add to what this user owes
         }
       });
     });
@@ -78,9 +106,11 @@ const GroupSummaryPage = () => {
           obj[key] = value;
           return obj;
         }, {});
+*/
+setOwedAmounts(owedAmounts)
+    //setOwedAmounts(filteredData); // Save calculated amounts in state
 
-
-    setOwedAmounts(filteredData); // Save calculated amounts in state
+    console.log(owedAmounts);
   };
 
   const handlePaymentClick = (memberName) => {
@@ -100,7 +130,7 @@ const GroupSummaryPage = () => {
             <p className="text-2xl font-bold mb-4">Total:</p>
             {Object.entries(owedAmounts).map(([member, amount]) => (
                 <p key={member} className="text-lg mb-2 py-1.5">
-                  You owe <span className="font-semibold">{member}</span> ${amount.toFixed(2)}
+                  You owe <span className="font-semibold">{userMap[member]}</span> ${amount.toFixed(2)}
                 </p>
             ))}
           </div>
@@ -113,7 +143,7 @@ const GroupSummaryPage = () => {
             {Object.entries(owedAmounts).map(([member, amount]) => (
                 <div key={member} className="flex items-center justify-between mb-4">
             <span className="text-lg">
-              <span className="font-semibold">{member}</span> owes ${amount.toFixed(2)}
+              <span className="font-semibold">{userMap[member]}</span>
             </span>
                   <button
                       className="ml-4 py-2 px-4 bg-green-500 text-white rounded-md shadow hover:bg-green-600 transition duration-200"
@@ -136,7 +166,12 @@ const GroupSummaryPage = () => {
           >
             &times;
           </span>
-                <img src="/paymentqr.jpg" className="w-64 h-64" alt="QR Code" />
+                <h2 className="text-xl font-semibold mb-4">Scan the QR Code to Make a Payment</h2>
+                <p className="text-gray-700 mb-4">
+                  Please use your mobile banking app or a QR code scanner to scan the code below and complete your
+                  payment.
+                </p>
+                <img src="/paymentqr.jpg" className="w-64 h-64" alt="QR Code"/>
               </div>
             </div>
         )}
