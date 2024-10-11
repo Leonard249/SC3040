@@ -175,7 +175,7 @@ const handleAddGroup = async () => {
     }, [])
 
     return (
-        <div className="flex flex-col items-center justify-center p-6 h-screen">
+        <div className="flex flex-col items-center justify-center p-6">
             <h1 className="text-2xl font-bold mb-4">Welcome {userName || 'User'}</h1>
             <div className="w-1/2 mb-8">
                 <h2 className="text-2xl font-bold mb-4">Groups:</h2>

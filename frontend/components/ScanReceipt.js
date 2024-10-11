@@ -129,7 +129,8 @@ const ScanReceipt = () => {
     return (
         <div className="flex justify-center items-center h-screen relative">
             {/* Dropdown for selecting group */}
-            <div className="absolute top-10 z-10">
+            <div className="absolute top-10 z-10 flex items-center space-x-4">
+                <img src="logo.svg" className="logo w-8 h-8 mr-2" alt="Logo"/>
                 <select
                     value={selectedGroup}
                     onChange={(e) => setSelectedGroup(e.target.value)}
