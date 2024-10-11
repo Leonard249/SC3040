@@ -68,9 +68,9 @@ const Member = ({ member, onDropItem, assignedItems, onDeleteItem, onPutBackItem
   return (
     <div
       ref={drop}
-      className={`p-4 bg-gray-100 rounded mb-2 border-b-2 ${isOver ? 'bg-green-300' : ''}`}
+      className={`p-4 bg-yellow-100 shadow-s rounded mb-2 border-b-2 ${isOver ? 'bg-green-300' : ''}`}
     >
-      <p className="text-center">Member {member}</p>
+      <p className="text-center">{member}</p>
       <div className="mt-2">
         {assignedItems.map((item) => (
           <Item
@@ -346,6 +346,46 @@ const SplitPage = () => {
     setItems((prevItems) => [...prevItems, newItem]);
   };
 
+  const handleSubmit = async () => {
+    console.log(members)
+
+    const transformedData = {
+      group: groupId,
+      items: members
+          .filter((member) => member.items.length > 0) // Only consider members with non-empty items
+          .flatMap((member) =>
+              member.items.map((item) => ({
+                name: item.name,        // Set name of the item
+                cost: item.amount,      // Set cost of the item (from amount)
+                user_id: member.id,     // Set user_id from member id
+                paid_by: "",            // Placeholder for paid_by (update this as needed)
+              }))
+          ),
+    };
+
+    //TODO: USERID
+    transformedData.items.forEach(item => item.paid_by = "6706087b1143dcab37a70f35"); // Set to a static value or adjust as needed
+
+    try {
+      const response = await apiClient.post('/v1/expense', transformedData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.status === 200) { // Check for success using response status
+
+        alert("Group created successfully");
+
+        window.location.href = '/';
+      } else {
+        console.error('Error adding group:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error adding group:', error);
+    }
+  }
+
   return (
       <DndProvider backend={HTML5Backend}>
         {/* Show the loader if loading is true */}
@@ -399,6 +439,7 @@ const SplitPage = () => {
                 </div>
 
                 {/* Members Section */}
+                <div className="flex flex-col items-center">
                 <div className="members-section p-6 border ml-4">
                   <h2 className="text-xl font-semibold mb-4">Members</h2>
                   {members.map((member) => (
@@ -411,6 +452,17 @@ const SplitPage = () => {
                           onPutBackItem={handlePutBack}
                       />
                   ))}
+                </div>
+
+                {/* Submit Button under Members */}
+                <div className="flex justify-center mt-4">
+                  <button
+                      onClick={handleSubmit}
+                      className="bg-green-500 text-white py-3 px-8 rounded-lg shadow-md hover:bg-green-600 transition duration-200"
+                  >
+                    Submit
+                  </button>
+                </div>
                 </div>
               </div>
             </div>
