@@ -169,6 +169,8 @@ const SplitPage = () => {
 
   const [image, setImage] = useState('');
   const [loading, setLoading] = useState(true); // Loading state to manage the loader visibility
+  const [groupName, setGroupName] = useState('')
+
 
 
   const convertDataURIToPlainText = (dataURI) => {
@@ -195,8 +197,6 @@ const SplitPage = () => {
 
     // Function to fetch group members
     const fetchMembers = () => {
-      // TODO: convert groupId
-      let groupId = "670761b7f7d1a0abedfdb6e8";
       return apiClient.get(`/v1/groups/get_user/${groupId}`);
     };
 
@@ -205,11 +205,16 @@ const SplitPage = () => {
       return apiClient.get(`/v1/get/get-username-from-id/${userId}`);
     };
 
+    const fetchGroupname = () => {
+      return apiClient.get(`/v1/get/get-group-name/${groupId}`);
+    };
+
+
     // Async function inside useEffect to handle promises with await
     const fetchData = async () => {
       try {
         // Execute both API requests in parallel
-        const [ocrResponse, membersResponse] = await Promise.all([ocrScan(), fetchMembers()]);
+        const [ocrResponse, membersResponse, groupNameResponse] = await Promise.all([ocrScan(), fetchMembers(), fetchGroupname()]);
 
         // Handle OCR Scan response
         if (ocrResponse.status === 200) {
@@ -238,6 +243,9 @@ const SplitPage = () => {
             })
           );
           setMembers(membersWithNames);
+
+          setGroupName(groupNameResponse.data.group_name)
+
         } else {
           console.error("membersResponse.data is not an array:", membersResponse.data);
         }
@@ -348,13 +356,12 @@ const SplitPage = () => {
             <div className="flex justify-center items-center h-screen relative">
               <div className="absolute top-20 z-10">
                 <h2 className="text-xl font-semibold mb-4">
-                  Receipt for group: <span className="text-red-500">{groupId}</span>
+                  Receipt for group: <span className="text-red-500">{groupName}</span>
                 </h2>
               </div>
               <div className="split-page flex justify-center items-center h-screen">
                 {/* Receipt Section */}
-                <div className="receipt-section p-6 border">
-                  <h2 className="text-xl font-semibold mb-4">The receipt you provided</h2>
+                <div className="receipt-section p-6 border flex flex-col items-center">
                   <Image
                       src={image}
                       alt="Receipt"
