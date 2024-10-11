@@ -1,2 +1,2 @@
 Class: Title
-Confidence: 0.73
+Confidence: 0.80
