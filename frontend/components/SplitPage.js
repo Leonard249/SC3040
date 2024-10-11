@@ -393,13 +393,13 @@ const SplitPage = () => {
 
         {/* Render the main content if loading is false */}
         {!loading && (
-            <div className="flex justify-center items-center h-screen relative">
-              <div className="absolute top-20 z-10">
+            <div className="flex flex-col justify-start items-center h-auto space-y-8">
+              <div className="text-center pt-5">
                 <h2 className="text-xl font-semibold mb-4">
-                  Receipt for group: <span className="text-red-500">{groupName}</span>
+                  Receipt for group: <span className="text-yellow-700">{groupName}</span>
                 </h2>
               </div>
-              <div className="split-page flex justify-center items-center h-screen">
+              <div className="flex justify-center items-center">
                 {/* Receipt Section */}
                 <div className="receipt-section p-6 border flex flex-col items-center">
                   <Image

@@ -102,7 +102,7 @@ const GroupPage = () => {
     groups.find((group) => group.group_id === selectedGroup) || {};
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+      <div className="flex flex-col items-center justify-center min-h-screen p-10 space-y-8"> {/* Centered main container */}
       <div className="group-select">
         <label htmlFor="group-dropdown" className="grouppage-font">
           Select Group:

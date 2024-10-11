@@ -5,7 +5,6 @@
 }
 
 .left-box {
-  width: 60%;
   /* Adjust this as needed */
   height: 743px;
 
@@ -20,12 +19,13 @@
   align-items: center;
   margin-bottom: 10px; /* Add some space below */
   justify-content: space-between;
+  gap: 32px;
 }
 
 .row-left {
   display: flex;
   flex-direction: row;
-  gap: 10px;
+  gap: 5px;
 }
 
 .grouppage-font {
@@ -38,7 +38,7 @@
 .row-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
 }
 
 .group-id {
