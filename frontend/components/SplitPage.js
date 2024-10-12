@@ -188,7 +188,10 @@ const SplitPage = () => {
               />
 
               {/* Buttons Wrapper with Flexbox */}
-              <Rescan_Manual_Buttons className="flex gap-4 mb-4" />
+              <Rescan_Manual_Buttons
+                className="flex gap-4 mb-4"
+                setItems={setItems}
+              />
 
               {/* Displaying Items */}
               {items.map((item) => (

@@ -2,7 +2,7 @@ import React, { useState } from "react"; // Import useState to manage modal stat
 import ManualInput from "./ManualInput";
 import { useRouter } from "next/navigation";
 
-const Rescan_Manual_Buttons = ({ className }) => {
+const Rescan_Manual_Buttons = ({ className, setItems }) => {
   // Manage the modal open state
   const [modalOpen, setModalOpen] = useState(false);
   const router = useRouter();
