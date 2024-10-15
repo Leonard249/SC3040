@@ -13,3 +13,4 @@ docs/html
 test-reports
 
 .env
+.python-version
