@@ -264,14 +264,13 @@
 }
 
 .tooltip {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border-radius: 5px;
+  padding: 5px 10px;
   position: absolute;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 8px;
-  z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  color: #000;
+  z-index: 1000; /* Ensure it appears above other elements */
+  white-space: nowrap; /* Prevent line breaks */
 }
 
 .draggable {
