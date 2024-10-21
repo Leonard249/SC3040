@@ -44,7 +44,16 @@ const useAuth = () => {
     setUser(null);
   };
 
-  return { user, loginUser, registerUser, logoutUser, loading };
+  const isAuthenticated = !!user;
+
+  return {
+    user,
+    loginUser,
+    registerUser,
+    logoutUser,
+    loading,
+    isAuthenticated,
+  };
 };
 
 export default useAuth;
