@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "react-beautiful-dnd": "^13.1.1"
+    "react-beautiful-dnd": "^13.1.1",
+    "react-tooltip": "^5.28.0"
   }
 }
