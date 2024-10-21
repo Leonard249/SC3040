@@ -13,6 +13,7 @@ const GroupPage = () => {
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [groups, setGroups] = useState([]);
   const [assignedItems, setAssignedItems] = useState({});
+  const [hoveredItem, setHoveredItem] = useState(null);
 
   const getGroupName = async (groupId) => {
     try {
@@ -62,7 +63,11 @@ const GroupPage = () => {
       const userItems = {};
       selectedGroupData.users.forEach((user) => {
         userItems[user.memberName] = user.items
-          ? user.items.map((item) => item.item)
+          ? user.items.map((item) => ({
+              name: item.item,
+              price: item.amount,
+              paid_by: item.paid_by,
+            }))
           : [];
       });
 
@@ -194,8 +199,8 @@ const GroupPage = () => {
                               {assignedItems[user.memberName]?.map(
                                 (item, index) => (
                                   <Draggable
-                                    key={item} // Use item name as the unique key
-                                    draggableId={item}
+                                    key={item.name} // Use item name as the unique key
+                                    draggableId={item.name}
                                     index={index}
                                   >
                                     {(provided) => (
@@ -204,15 +209,28 @@ const GroupPage = () => {
                                         ref={provided.innerRef}
                                         {...provided.draggableProps}
                                         {...provided.dragHandleProps}
+                                        onMouseEnter={() =>
+                                          setHoveredItem(item)
+                                        }
+                                        onMouseLeave={() =>
+                                          setHoveredItem(null)
+                                        }
                                       >
-                                        {item}
+                                        {item.name}
+                                        {/* Tooltip for price and paid by */}
+                                        {hoveredItem &&
+                                          hoveredItem.name === item.name && (
+                                            <div className="tooltip">
+                                              <p>Price: ${item.price}</p>
+                                              <p>Paid by: {item.paid_by}</p>
+                                            </div>
+                                          )}
                                       </div>
                                     )}
                                   </Draggable>
                                 )
                               )}
-                              {provided.placeholder}{" "}
-                              {/* Required for the Droppable */}
+                              {provided.placeholder}
                             </div>
                           )}
                         </Droppable>
@@ -230,7 +248,7 @@ const GroupPage = () => {
                         </div>
                       </div>
                     ))}
-                  {provided.placeholder} {/* Required for the Droppable */}
+                  {provided.placeholder}
                 </div>
               )}
             </Droppable>
