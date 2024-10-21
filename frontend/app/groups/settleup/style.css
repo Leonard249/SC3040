@@ -19,6 +19,7 @@
   height: 600px;
   box-sizing: border-box;
 
+  background: rgba(240, 240, 240, 0.67);
   border: 1px solid #000000;
   border-radius: 15px;
 }
