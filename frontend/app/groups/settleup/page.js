@@ -17,7 +17,6 @@ const GroupSummaryPage = () => {
     if (groupData) {
       calculateOwedAmounts(groupData);
     }
-    console.log(groupData);
   }, []); // Run only once on mount
 
   const calculateOwedAmounts = (groupData) => {

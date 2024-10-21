@@ -25,15 +25,6 @@ const GroupPage = () => {
     }
   };
 
-  const saveUserMapping = (userId, memberName) => {
-    if (!userId || !memberName) {
-      console.error("Both userId and memberName are required.");
-      return;
-    }
-
-    setUserMap((prevMap) => ({ ...prevMap, [userId]: memberName })); // Changed to create a new object
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -49,33 +40,13 @@ const GroupPage = () => {
         );
 
         setGroups(groupsWithNames);
-        let foundUser = false;
-        data.forEach((group) => {
-          group.users.forEach((member) => {
-            if (member.user_id === userId.toString()) {
-              setUserName(member.memberName);
-              foundUser = true;
-            }
-          });
-        });
 
-        data.forEach((group) => {
-          group.users.forEach((user) => {
-            saveUserMapping(user.user_id, user.memberName);
-          });
-        });
-
-        if (!foundUser) {
-          console.warn("User not found");
-        }
-
-        const storedGroupId = localStorage.getItem("selectedGroupId"); // Added this line
-
-        // Optionally set a default group if none is selected
-        if (storedGroupId) {
+        const storedGroupId = localStorage.getItem("selectedGroupId");
+        // Set the selected group only if groups have been successfully fetched
+        if (storedGroupId && groupsWithNames.length > 0) {
           setSelectedGroup(storedGroupId);
         } else {
-          setSelectedGroup(data[0].group_id); // Set default selected group after fetching
+          setSelectedGroup(data[0]?.group_id); // Set default selected group after fetching
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -109,6 +80,10 @@ const GroupPage = () => {
 
   const handleRedirect = (path) => {
     console.log("Selected group being stored:", currentGroup);
+    console.log(
+      "selected groupid being stored:",
+      localStorage.getItem("selectedGroupId")
+    );
     localStorage.setItem("selectedGroup", JSON.stringify(currentGroup));
     router.push(path);
   };
