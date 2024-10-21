@@ -1,22 +1,22 @@
 "use client";
-import { FAKE_RESPONSE_TRUE } from "@/lib/constants";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useState, useRef } from "react";
 
-const ProfileCard = ({ userData }) => {
-  //   const [selectedImg, setSelectedImg] = useState(userData?.profilePic || "/logo.svg");
-  const [selectedImg, setSelectedImg] = useState("/logo.svg");
-
+const ProfileCard = ({ userDetails }) => {
+  const [selectedImg, setSelectedImg] = useState(
+    userDetails?.profilePic || "/logo.svg"
+  );
   const [formData, setFormData] = useState({
-    username: userData?.username || "",
-    email: userData?.email || "",
-    phone: userData?.phone || "",
+    name: userDetails?.name || "",
+    email: userDetails?.email || "",
+    phone: userDetails?.phone || "",
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
+
   const fileInputRef = useRef(null);
 
   const handleImageChange = (e) => {
@@ -35,14 +35,37 @@ const ProfileCard = ({ userData }) => {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
+    setFormData((prevData) => ({
+      ...prevData,
       [id]: value,
     }));
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // try {
+    //   const token = localStorage.getItem("token");
+    //   const response = await fetch(
+    //     `https://your-backend-api.com/update-user/${userDetails.user_id}`,
+    //     {
+    //       method: "POST",
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         Authorization: `Bearer ${token}`, // Authenticate with token
+    //       },
+    //       body: JSON.stringify(formData),
+    //     }
+    //   );
+
+    //   if (response.ok) {
+    //     alert("Profile updated successfully");
+    //   } else {
+    //     alert("Failed to update profile");
+    //   }
+    // } catch (error) {
+    //   console.error("Error updating profile:", error);
+    // }
 
     try {
       const token = localStorage.getItem("token");
@@ -75,7 +98,7 @@ const ProfileCard = ({ userData }) => {
                 />
                 <div className="space-y-1.5">
                   <h1 className="text-2xl font-bold">
-                    {formData.username || "USERNAME"}
+                    {formData.name || "USERNAME"}
                   </h1>
                 </div>
               </div>
@@ -101,8 +124,8 @@ const ProfileCard = ({ userData }) => {
                     <Input
                       id="name"
                       placeholder="Enter your name"
-                      value={formData.username}
-                      onchange={handleChange}
+                      value={formData.name}
+                      onChange={handleChange}
                     />
                   </div>
                   <div>
@@ -131,9 +154,9 @@ const ProfileCard = ({ userData }) => {
                 <h2 className="text-lg font-semibold">Change Password</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="current-password">Current Password</Label>
+                    <Label htmlFor="currentPassword">Current Password</Label>
                     <Input
-                      id="current-password"
+                      id="currentPassword"
                       placeholder="Enter your current password"
                       type="password"
                       value={formData.currentPassword}
@@ -141,9 +164,9 @@ const ProfileCard = ({ userData }) => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="new-password">New Password</Label>
+                    <Label htmlFor="newPassword">New Password</Label>
                     <Input
-                      id="new-password"
+                      id="newPassword"
                       placeholder="Enter your new password"
                       type="password"
                       value={formData.newPassword}
@@ -151,9 +174,9 @@ const ProfileCard = ({ userData }) => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
                     <Input
-                      id="confirm-password"
+                      id="confirmPassword"
                       placeholder="Confirm your new password"
                       type="password"
                       value={formData.confirmPassword}
