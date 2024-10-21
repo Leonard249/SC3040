@@ -1,15 +1,13 @@
-import Header from '@/components/Header'
-import React from 'react'
+import Header from "@/components/Header";
+import React from "react";
 
-const HomeLayout = ({children}) => {
+const HomeLayout = ({ children }) => {
   return (
     <>
       <Header />
-      <main className="px-3 lg:px-14">
-        {children}
-      </main>
+      <main className="px-3 lg:px-14">{children}</main>
     </>
-  )
-}
+  );
+};
 
-export default HomeLayout
+export default HomeLayout;
