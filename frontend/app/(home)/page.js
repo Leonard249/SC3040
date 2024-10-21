@@ -26,7 +26,7 @@ const HomePage = () => {
     <div>
       <h1>Welcome Home!</h1>
       <p>You are logged in as {user?.user_id}</p>
-      <LogoutButton /> {/* Add a logout button */}
+      <LogoutButton />
     </div>
   );
 };
