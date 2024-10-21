@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import React, { useState } from "react";
+import { useState, useContext } from "react";
+import AuthContext from "@/hooks/Auth";
 import NavButton from "./NavButton";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { useMedia } from "react-use";
@@ -28,6 +29,7 @@ const routes = [
 ];
 
 const Navigation = () => {
+  const { logoutUser, isAuthenticated } = useContext(AuthContext);
   const [isOpen, setIsOpen] = useState(false);
 
   const router = useRouter();
@@ -35,9 +37,22 @@ const Navigation = () => {
   const pathname = usePathname();
 
   const onClick = (href) => {
+    if (href === "logout") {
+      logoutUser();
+      return;
+    }
     router.push(href);
     setIsOpen(false);
   };
+
+  const authenticatedRoutes = [...routes];
+
+  if (isAuthenticated) {
+    authenticatedRoutes.push({
+      href: "logout",
+      label: "Logout",
+    });
+  }
 
   if (isMobile) {
     return (
@@ -53,7 +68,7 @@ const Navigation = () => {
         </SheetTrigger>
         <SheetContent side="left" className="px-2">
           <nav className="flex flex-col gap-y-2 pt-6">
-            {routes.map((route) => (
+            {authenticatedRoutes.map((route) => (
               <Button
                 key={route.href}
                 variant={route.href === pathname ? "secondary" : "ghost"}
@@ -68,16 +83,31 @@ const Navigation = () => {
       </Sheet>
     );
   }
+
   return (
-    <nav className="hidden lg:flex items-center gap-x-2 overflow-x-auto">
-      {routes.map((route) => (
-        <NavButton
-          key={route.href}
-          href={route.href}
-          label={route.label}
-          isActive={pathname === route.href}
-        />
-      ))}
+    <nav className="hidden lg:flex items-center gap-x-2 w-full">
+      <div className="flex items-center gap-x-2">
+        {routes.map((route) => (
+          <NavButton
+            key={route.href}
+            href={route.href}
+            label={route.label}
+            isActive={pathname === route.href}
+            onClick={() => onClick(route.href)}
+          />
+        ))}
+      </div>
+      {isAuthenticated && (
+        <div className="ml-auto">
+          <NavButton
+            href="logout"
+            label="Logout"
+            isActive={false}
+            onClick={() => onClick("logout")}
+            isLogout
+          />
+        </div>
+      )}
     </nav>
   );
 };

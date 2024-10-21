@@ -1,6 +1,6 @@
-import React from 'react'
-import HeaderLogo from './HeaderLogo'
-import Navigation from './Navigation'
+import React from "react";
+import HeaderLogo from "./HeaderLogo";
+import Navigation from "./Navigation";
 
 const Header = () => {
   return (
@@ -14,7 +14,7 @@ const Header = () => {
         </div>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;
