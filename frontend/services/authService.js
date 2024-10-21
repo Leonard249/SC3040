@@ -1,15 +1,18 @@
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const API_URL = "http://localhost:8888/v1/auth";
 
+// Login function to authenticate and store the token in cookies
 export const login = async (email, password) => {
   try {
     const response = await axios.post(`${API_URL}/login`, { email, password });
 
     const { access_token, token_type, user_id } = response.data;
 
-    localStorage.setItem("token", access_token);
-    localStorage.setItem("user_id", user_id);
+    // Store token and user ID in cookies
+    Cookies.set("token", access_token, { expires: 7 });
+    Cookies.set("user_id", user_id, { expires: 7 });
 
     return { access_token, token_type, user_id };
   } catch (error) {
@@ -17,6 +20,7 @@ export const login = async (email, password) => {
   }
 };
 
+// Register function to register and store user details in cookies
 export const register = async (email, password) => {
   try {
     const response = await axios.post(`${API_URL}/register`, {
@@ -26,15 +30,18 @@ export const register = async (email, password) => {
 
     const { message, user_id } = response.data;
 
-    localStorage.setItem("message", message);
-    localStorage.setItem("user_id", user_id);
+    // Store message and user ID in cookies
+    Cookies.set("message", message, { expires: 7 });
+    Cookies.set("user_id", user_id, { expires: 7 });
 
     return { message, user_id };
   } catch (error) {
     throw new Error(error.response?.data?.msg || "Register failed");
   }
 };
+
+// Logout function to clear cookies
 export const logout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user_id");
+  Cookies.remove("token");
+  Cookies.remove("user_id");
 };
