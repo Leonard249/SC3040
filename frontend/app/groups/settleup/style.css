@@ -2,6 +2,7 @@
   display: flex;
   justify-content: space-between;
   padding: 20px;
+  flex-direction: column;
 }
 
 .content {
@@ -14,28 +15,20 @@
 }
 
 .box {
-  width: 40%;
-  /* Adjust this as needed */
-  height: 600px;
-  box-sizing: border-box;
-
-  background: rgba(240, 240, 240, 0.67);
-  border: 1px solid #000000;
-  border-radius: 15px;
+  display: inline-block; /* Takes up only as much space as the content */
+  width: auto; /* Adjust width automatically based on content */
+  padding: 10px; /* Optional: add some padding */
+  margin: 0 auto; /* Center the box horizontally if needed */
+  background-color: #f4f4f4; /* Example background color */
+  border-radius: 8px; /* Optional: add rounded corners */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow */
+  min-width: 500px; /* Ensure it doesn't shrink below a certain width */
+  min-height: 500px; /* Optional: minimum height if needed */
 }
+
 .payment-button {
-  width: 150px;
-  padding: 10px;
-  margin: 0 auto; /* Center horizontally */
-  display: block;
-  background-color: #4caf50;
-  color: white;
-  text-align: center;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
   cursor: pointer;
-  align-content: end;
+  margin-left: 10px;
 }
 
 .modal {
@@ -55,7 +48,6 @@
   margin: auto;
   padding: 20px;
   border: 1px solid #888;
-  width: 80%; /* Width of modal */
 }
 
 .close {
@@ -70,4 +62,18 @@
   color: black;
   text-decoration: none;
   cursor: pointer;
+}
+
+.back-button {
+  background-color: #6b7280; /* Tailwind gray-500 */
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  width: 5%;
+}
+
+.back-button:hover {
+  background-color: #4b5563; /* Tailwind gray-600 */
 }
