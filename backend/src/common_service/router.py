@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 import os
 from dotenv import load_dotenv
 
+from .pydantic import User
 from .service import CommonService
 from .utils import hello_world
 
@@ -31,3 +32,25 @@ async def get_all_users():
         return {"message": "Successfully Retrieve", "data": user_result}
     else:
         return {"message": "No Records Found"}
+
+
+@router.get("/user/{user_id}",
+            response_description="Get user details from user id")
+async def get_user(user_id: str):
+    user = await common_service.get_user(user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user
+
+
+@router.put("/user/{user_id}",
+            response_description="Update user details from user id")
+async def update_user(user_id: str, user: User):
+    user = await common_service.update_user(user_id, user)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user
