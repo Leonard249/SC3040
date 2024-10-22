@@ -60,7 +60,7 @@ async def fetch_smtp_settings_from_db(email):
 
 def infer_smtp_settings(domain):
     common_smtp_settings = {
-        'gmail.com': {'server': 'smtp.gmail.com', 'port': 587, 'user': 'bananasplitaswe@gmail.com', 'password': 'ktmb sisp oyrs marw'},
+        'gmail.com': {'server': 'smtp.gmail.com', 'port': 587, 'user': 'aswebananasplit@gmail.com', 'password': 'kgbm pily jksh yteb'},
         'yahoo.com': {'server': 'smtp.mail.yahoo.com', 'port': 465, 'user': '', 'password': ''},
         'outlook.com': {'server': 'smtp.office365.com', 'port': 587, 'user': '', 'password': ''},
         # Add more common domains and their SMTP settings as needed
