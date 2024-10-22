@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import AddMember from "@/app/groups/createGroup";
 import apiClient from "@/app/axios";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import reacttooltip from "react-tooltip";
 
 const GroupPage = () => {
   const userId = "6706087b1143dcab37a70f34"; // Assume this is current user
@@ -57,10 +56,17 @@ const GroupPage = () => {
     const newSelectedGroup = event.target.value;
     setSelectedGroup(newSelectedGroup);
     localStorage.setItem("selectedGroupId", newSelectedGroup);
+    console.log(currentGroup);
   };
 
   const currentGroup =
     groups.find((group) => group.group_id === selectedGroup) || {};
+
+  const getUserNameById = (userId) => {
+    const user = currentGroup.users.find((user) => user.user_id === userId);
+    console.log(user);
+    return user ? user.memberName : "Unknown User";
+  };
 
   const calculateNetAmountOwed = (currentGroup, userName) => {
     let totalOwed = 0;
@@ -179,9 +185,12 @@ const GroupPage = () => {
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
                                       className="draggable"
-                                      data-tip={`Amount: $${item.amount.toFixed(
+                                      // Attach tooltip information
+                                      title={`Amount: $${item.amount.toFixed(
                                         2
-                                      )}, Paid By: ${item.paid_by}`}
+                                      )}, Paid By: ${getUserNameById(
+                                        item.paid_by
+                                      )}`} // Native tooltip
                                     >
                                       {item.item} - Price: $
                                       {item.amount.toFixed(2)}
@@ -239,6 +248,7 @@ const GroupPage = () => {
                 )}
               </div>
             </div>
+            {/* Tooltip Component */}
           </div>
         )}
       </Droppable>
