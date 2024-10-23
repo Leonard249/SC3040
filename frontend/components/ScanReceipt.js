@@ -4,34 +4,29 @@ import { useRouter } from "next/navigation";
 import apiClient from "@/app/axios";
 import DropdownSelectGroup from "./DropdownSelectGroup";
 import FileDropping from "./FileDropping";
+import useAuth from "@/hooks/useAuth";
 
 const ScanReceipt = () => {
+  const { user, loading } = useAuth();
   const [dragging, setDragging] = useState(false);
   const [file, setFile] = useState(null);
   const [groups, setGroups] = useState([]); // State to hold the user's groups
   const [selectedGroup, setSelectedGroup] = useState(""); // State for the selected group
   const fileInputRef = useRef(null); // Ref for the file input
   const router = useRouter(); // Call useRouter at the top level
-  const [userId, setUserId] = useState(); // Default userId
-
+  const userId = user?.user_id;
   // Fetch user's groups when the component mounts or userId changes
   useEffect(() => {
     // Set userId based on query parameter or default value
-    //TODO: USERID
-    const queryUserId =
-      new URLSearchParams(window.location.search).get("userId") ||
-      "6706087b1143dcab37a70f34"; // Change to valid user ID
-    setUserId(queryUserId);
 
     // Fetch groups that the user belongs to from GROUP_USER_ITEM
     const fetchData = async () => {
+      if (loading || !userId) return;
       try {
-        let responseData = await apiClient.get(
-          `/v1/expense/all/${queryUserId}`
-        );
+        let responseData = await apiClient.get(`/v1/expense/all/${userId}`);
         console.log(responseData);
         const userGroups = responseData.data.data.groups.filter((group) =>
-          group.users.some((user) => user.user_id === queryUserId)
+          group.users.some((user) => user.user_id === userId)
         );
         setGroups(userGroups);
 
@@ -46,7 +41,7 @@ const ScanReceipt = () => {
           })
         );
         // Log userId and fetched groups for debugging
-        console.log("User ID:", queryUserId, "Groups fetched:", userGroups);
+        console.log("User ID:", userId, "Groups fetched:", userGroups);
 
         setGroups(groupsWithNames);
       } catch (error) {

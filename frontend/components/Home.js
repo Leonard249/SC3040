@@ -3,18 +3,23 @@ import React, { useState, useEffect } from "react";
 import apiClient from "@/app/axios";
 import Link from "next/link";
 import ListOfGroups from "./ListOfGroups";
-import AddGroup from "./AddGroup";
+import AddGroup from "./addGroup";
+import useAuth from "@/hooks/useAuth";
 
 const Home = () => {
   //TODO: USERID
-  const userId = "6706087b1143dcab37a70f34"; // Assuming the current user has account_id 101
+  const { user, loading } = useAuth();
   const [groups, setGroups] = useState([]);
   const [totalOwed, setTotalOwed] = useState({});
   const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [availableUsers, setAvailableUsers] = useState([]);
+  const userId = user?.user_id;
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("User ID:", userId);
+      if (loading || !userId) return;
       try {
         let responseData = await apiClient.get(`/v1/expense/all/${userId}`);
         let responseData2 = await apiClient.get(`/v1/common/users`);
@@ -24,6 +29,15 @@ const Home = () => {
         const data2 = responseData2.data.data;
         setGroups(data);
         setAvailableUsers(data2);
+
+        const loggedInUser = data2.find((u) => u._id === userId);
+        if (loggedInUser) {
+          setUserName(loggedInUser.username);
+          setUserEmail(loggedInUser.email);
+        } else {
+          console.warn("User not found in the available users list");
+        }
+
         const groupNames = await Promise.all(
           data.map(async (group) => {
             const groupName = await getGroupName(group.group_id); // Call getGroupName
@@ -32,23 +46,25 @@ const Home = () => {
         );
         setGroups(groupNames);
 
-        const foundUser = data
-          .flatMap((group) => group.users)
-          .find((member) => member.user_id === userId.toString());
+        calculateTotalOwed(data, userId); // Calculate with userId
 
-        if (foundUser) {
-          setUserName(foundUser.memberName);
-          calculateTotalOwed(data);
-        } else {
-          console.warn("User not found");
-        }
+        //const foundUser = data
+        //  .flatMap((group) => group.users)
+        //  .find((member) => member.user_id === userId.toString());
+
+        //if (foundUser) {
+        //  setUserName(foundUser.memberName);
+        //  calculateTotalOwed(data);
+        //} else {
+        //  console.warn("User not found");
+        //}
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData(); // Call the async function inside useEffect
-  }, []); // Add `userId` as a dependency if it changes
+  }, [userId, loading]); // Add `userId` as a dependency if it changes
 
   const getGroupName = async (groupId) => {
     try {
@@ -126,9 +142,9 @@ const Home = () => {
 
         <AddGroup
           userId={userId}
+          userEmail={userEmail}
           groups={groups}
           setGroups={setGroups}
-          availableUsers={availableUsers}
         />
       </div>
     </div>

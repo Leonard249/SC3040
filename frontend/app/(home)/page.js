@@ -3,6 +3,7 @@ import { useEffect, useContext } from "react";
 import { useRouter } from "next/navigation";
 import AuthContext from "@/hooks/Auth";
 import LogoutButton from "@/components/LogoutButton";
+import Home from "@/components/Home";
 
 const HomePage = () => {
   const { user, loading } = useContext(AuthContext);
@@ -24,9 +25,8 @@ const HomePage = () => {
 
   return (
     <div>
-      <h1>Welcome Home!</h1>
-      <p>You are logged in as {user?.user_id}</p>
-      <LogoutButton />
+      <Home></Home>
+      <LogoutButton /> {/* Add a logout button */}
     </div>
   );
 };

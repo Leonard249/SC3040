@@ -1,46 +1,37 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import apiClient from "@/app/axios";
 
-const AddGroup = ({ userId, groups, setGroups, availableUsers }) => {
-  // Function to handle adding a new group
+const AddGroup = ({ userId, userEmail, groups, setGroups }) => {
   const [newGroup, setNewGroup] = useState({
     groupName: "",
-    members: [{ user_id: userId }],
-  }); // Default to current user
+    members: [userEmail], // Start with the current user's email
+  });
 
   const [showForm, setShowForm] = useState(false);
 
   const handleAddGroup = async () => {
     const formattedGroup = {
       name: newGroup.groupName,
-      users: newGroup.members
-        .filter((member) => member.user_id !== "") // Exclude members with empty user_id
-        .map((member) => ({
-          user_id: member.user_id,
-        })),
+      users: newGroup.members.filter(
+        (email) => email !== userEmail && email !== ""
+      ), // Exclude current user's email and empty emails
     };
 
     console.log("Sending group data:", JSON.stringify(formattedGroup, null, 2));
 
     try {
-      console.log(formattedGroup);
       const response = await apiClient.post("/v1/groups", formattedGroup, {
         headers: {
           "Content-Type": "application/json",
         },
       });
 
-      if ((response.status === 200) | (response.status === 201)) {
-        // Check for success using response status
-        const addedGroup = response.data; // Axios automatically parses JSON
+      if (response.status === 200 || response.status === 201) {
+        const addedGroup = response.data;
         setGroups([...groups, addedGroup]);
-        setNewGroup({ groupName: "", members: [{ user_id: userId }] }); // Reset to default with current user
+        setNewGroup({ groupName: "", members: [userEmail] }); // Reset to include current user only
         setShowForm(false);
-
-        // Show success notification
         alert("Group created successfully");
-
-        // Refresh the page
         window.location.reload();
       } else {
         console.error("Error adding group:", response.statusText);
@@ -54,25 +45,16 @@ const AddGroup = ({ userId, groups, setGroups, availableUsers }) => {
   const addMember = () => {
     setNewGroup({
       ...newGroup,
-      members: [...newGroup.members, { user_id: "" }],
+      members: [...newGroup.members, ""], // Add empty string for new email input
     });
   };
 
   // Function to handle changes in member input
   const handleMemberChange = (index, value) => {
-    const updatedMembers = newGroup.members.map((member, i) =>
-      i === index ? { ...member, user_id: value } : member
+    const updatedMembers = newGroup.members.map((email, i) =>
+      i === index ? value : email
     );
     setNewGroup({ ...newGroup, members: updatedMembers });
-  };
-
-  // Function to filter available users for the dropdown
-  const getAvailableUsers = (selectedMembers, currentIndex) => {
-    return availableUsers.filter(
-      (user) =>
-        !selectedMembers.includes(user._id) ||
-        user._id === selectedMembers[currentIndex] // Allow replacing selected user
-    );
   };
 
   return (
@@ -97,25 +79,16 @@ const AddGroup = ({ userId, groups, setGroups, availableUsers }) => {
             className="block w-full mb-4 p-2 border border-gray-300 rounded"
           />
 
-          {newGroup.members.map((member, index) => (
+          {newGroup.members.map((email, index) => (
             <div key={index} className="flex mb-4">
-              <select
-                value={member.user_id}
+              <input
+                type="email"
+                placeholder="Enter email address"
+                value={email}
                 onChange={(e) => handleMemberChange(index, e.target.value)}
-                className="block w-1/2 mr-2 p-2 border border-gray-300 rounded"
-              >
-                <option value="" disabled>
-                  Select User
-                </option>
-                {getAvailableUsers(
-                  newGroup.members.map((m) => m.user_id),
-                  index
-                ).map((user) => (
-                  <option key={user._id} value={user._id}>
-                    {user.username}
-                  </option>
-                ))}
-              </select>
+                className="block w-full p-2 border border-gray-300 rounded"
+                required
+              />
             </div>
           ))}
 

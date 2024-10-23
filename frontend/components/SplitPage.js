@@ -7,13 +7,14 @@ import { useSearchParams } from "next/navigation";
 import apiClient from "@/app/axios";
 import Image from "next/image";
 import Loader from "./Loader";
-import ManualInput from "./ManualInput";
 import Item from "./Item";
 import Member from "./Member";
 import Rescan_Manual_Buttons from "./Rescan_Manual_Buttons";
+import useAuth from "@/hooks/useAuth";
 
 // Main SplitPage component
 const SplitPage = () => {
+  const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const groupId = searchParams.get("groupId");
@@ -22,6 +23,7 @@ const SplitPage = () => {
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(true); // Loading state to manage the loader visibility
   const [groupName, setGroupName] = useState("");
+  const userId = user?.user_id;
 
   const ITEM_TYPE = "ITEM";
 
@@ -137,9 +139,7 @@ const SplitPage = () => {
     };
 
     //TODO: USERID
-    transformedData.items.forEach(
-      (item) => (item.paid_by = "6706087b1143dcab37a70f34")
-    ); // Set to a static value or adjust as needed
+    transformedData.items.forEach((item) => (item.paid_by = userId)); // Set to a static value or adjust as needed
 
     try {
       const response = await apiClient.post("/v1/expense", transformedData, {
