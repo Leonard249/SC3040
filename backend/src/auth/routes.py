@@ -20,7 +20,7 @@ async def register(user: UserCreate):
     if db_user:
         raise HTTPException(status_code=400, detail="Email or username already registered")
     hashed_password = get_password_hash(user.password)
-    user_id = await create_user(user.email, user.phone_number, user.username, hashed_password)
+    user_id = await create_user(user.email, user.phone_number, user.username, user.pic_url, hashed_password)
     return {"message": "User registered successfully", "user_id": str(user_id)}
 
 @router.post("/login")

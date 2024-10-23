@@ -6,7 +6,7 @@ from typing import List
 from bson import ObjectId
 from fastapi import APIRouter
 from src.group.database import group_collection
-from src.auth.database import get_user_by_email, users_collection
+from src.auth.database import get_user_by_email_or_username, users_collection
 
 ROUTE_PREFIX = "/" + os.getenv("EXPENSE_SERVICE_VERSION") + "/get"
 router = APIRouter(prefix=ROUTE_PREFIX, tags=["get-service"])
