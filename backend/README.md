@@ -5,7 +5,12 @@ Creating a new Virtual Environment (terminal should be in backend):
 `cd venv/Scripts`
 
 `activate`
+
 To run email server locally
+
+`cd backend\src\flask_email_server`
+
+`python app.py`
 
 To run server locally (terminal should be in backend):
 
