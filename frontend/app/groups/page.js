@@ -5,13 +5,16 @@ import "./style.css";
 import { useRouter } from "next/navigation";
 import AddMember from "@/app/groups/createGroup";
 import apiClient from "@/app/axios";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+
 
 const GroupPage = () => {
+  //TODO: USERID
   const userId = "6706087b1143dcab37a70f34"; // Assume this is current user
   const router = useRouter();
-  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(""); // Initialize selectedGroup with an empty string
   const [groups, setGroups] = useState([]);
+  const [userName, setUserName] = useState("");
+  const [userMap, setUserMap] = useState({});
 
   const getGroupName = async (groupId) => {
     try {
@@ -22,237 +25,170 @@ const GroupPage = () => {
       return "Unnamed Group";
     }
   };
+  // Function to save user_id and memberName
+  const saveUserMapping = (userId, memberName) => {
+    if (!userId || !memberName) {
+      console.error("Both userId and memberName are required.");
+      return;
+    }
+
+    userMap[userId] = memberName; // Save the mapping
+    setUserMap(userMap);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const responseData = await apiClient.get(`/v1/expense/all/${userId}`);
+        let responseData = await apiClient.get(`/v1/expense/all/${userId}`);
         const data = responseData.data.data.groups;
 
+        // Fetch group names for each group
         const groupsWithNames = await Promise.all(
           data.map(async (group) => {
             const groupName = await getGroupName(group.group_id);
-            return { ...group, group_name: groupName };
+            return { ...group, group_name: groupName }; // Attach group name to the group object
           })
         );
 
         setGroups(groupsWithNames);
-        const storedGroupId = localStorage.getItem("selectedGroupId");
-        setSelectedGroup(storedGroupId || data[0]?.group_id);
+        let foundUser = false;
+        data.forEach((group) => {
+          group.users.forEach((member) => {
+            if (member.user_id === userId.toString()) {
+              setUserName(member.memberName);
+              foundUser = true;
+            }
+          });
+        });
+
+        data.forEach((group) => {
+          group.users.forEach((user) => {
+            saveUserMapping(user.user_id, user.memberName);
+          });
+        });
+
+        if (!foundUser) {
+          console.warn("User not found");
+        }
+
+        // Optionally set a default group if none is selected
+        if (data.length > 0 && !storedGroupId) {
+          setSelectedGroup(data[0].group_id); // Set default selected group after fetching
+        }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
       }
     };
 
-    fetchData();
-  }, []);
+    if (localStorage.getItem('selectedGroupId')) {
+      setSelectedGroup(localStorage.getItem('selectedGroupId'))
+    }
+
+    fetchData(); // Call the async function inside useEffect
+  }, []); // Run only once on mount
 
   const handleRedirect = (path) => {
-    localStorage.setItem("selectedGroup", JSON.stringify(currentGroup));
+    localStorage.setItem("selectedGroup", selectedGroup); // Store in local storage
     router.push(path);
   };
 
   const handleGroupChange = (event) => {
     const newSelectedGroup = event.target.value;
     setSelectedGroup(newSelectedGroup);
-    localStorage.setItem("selectedGroupId", newSelectedGroup);
-    console.log(currentGroup);
+    localStorage.setItem("selectedGroup", newSelectedGroup); // Store the new selection in local storage
   };
 
   const currentGroup =
     groups.find((group) => group.group_id === selectedGroup) || {};
 
-  const getUserNameById = (userId) => {
-    const user = currentGroup.users.find((user) => user.user_id === userId);
-    console.log(user);
-    return user ? user.memberName : "Unknown User";
-  };
-
-  const calculateNetAmountOwed = (currentGroup, userName) => {
-    let totalOwed = 0;
-    currentGroup.users.forEach((user) => {
-      if (user.memberName === userName) {
-        user.items.forEach((item) => {
-          if (item.paid_by !== user.user_id) {
-            totalOwed += item.amount;
-          }
-        });
-      }
-    });
-    return totalOwed;
-  };
-
-  // Handle drag end
-  const onDragEnd = (result) => {
-    if (!result.destination) return;
-
-    const { source, destination } = result;
-
-    // Find the source and destination users
-    const sourceUserIndex = currentGroup.users.findIndex(
-      (user) => user.user_id === source.droppableId
-    );
-    const destinationUserIndex = currentGroup.users.findIndex(
-      (user) => user.user_id === destination.droppableId
-    );
-
-    // Get the item being dragged
-    const [movedItem] = currentGroup.users[sourceUserIndex].items.splice(
-      source.index,
-      1
-    );
-
-    // Add the moved item to the destination user's items
-    currentGroup.users[destinationUserIndex].items.splice(
-      destination.index,
-      0,
-      movedItem
-    );
-
-    // Update state
-    setGroups([...groups]);
-  };
-
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <Droppable droppableId="droppable" type="USER">
-        {(provided) => (
-          <div
-            className="flex flex-col items-center justify-center min-h-screen p-10 space-y-8"
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-          >
-            <div className="group-select">
-              <label htmlFor="group-dropdown" className="font-bold">
-                Select Group:
-              </label>
-              <select
-                id="group-dropdown"
-                value={selectedGroup}
-                onChange={handleGroupChange}
-                className="group-dropdown"
-              >
-                <option value="">Select a Group</option>
-                {groups.map((group) => (
-                  <option key={group.group_id} value={group.group_id}>
-                    {group.group_name}
-                  </option>
-                ))}
-              </select>
+      <div className="flex flex-col items-center justify-center min-h-screen p-10 space-y-8"> {/* Centered main container */}
+      <div className="group-select">
+        <label htmlFor="group-dropdown" className="font-bold">
+          Select Group:
+        </label>
+        <select
+          id="group-dropdown"
+          value={selectedGroup}
+          onChange={handleGroupChange}
+          className="group-dropdown"
+        >
+          <option value="">Select a Group</option>
+          {groups.map((group) => (
+            <option key={group.group_id} value={group.group_id}>
+              {group.group_name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div style={{ display: "flex", flexDirection: "row" }}>
+        <div className="left-box bg-yellow-100 shadow-md rounded-lg p-6 max-w-3xl mx-auto">
+          {/* Header Section */}
+          <div className="top-row flex justify-between items-center mb-4">
+            <div className="row-left flex space-x-2 items-center">
+              <span className="text-xl font-bold">Group Name:</span>
+              <span className="text-xl">
+        {currentGroup.group_name || "No group selected"}
+      </span>
             </div>
-            <div style={{ display: "flex", flexDirection: "row" }}>
-              <div className="left-box bg-yellow-100 shadow-md rounded-lg p-6 max-w-3xl mx-auto">
-                <div className="top-row flex justify-between items-center mb-4">
-                  <div className="row-left flex space-x-2 items-center">
-                    <span className="text-xl font-bold">Group Name:</span>
-                    <span className="text-xl">
-                      {currentGroup.group_name || "No group selected"}
-                    </span>
-                  </div>
-                  <div className="row-right flex items-center">
+            <div className="row-right flex items-center">
+              <img src="logo.svg" className="logo w-8 h-8 mr-2" alt="Logo"/>
+              <span className="group-id text-sm">#{selectedGroup}</span>
+            </div>
+          </div>
+
+          {/* Activity Section */}
+          <div className="content mb-6">
+            <p className="font-semibold text-lg">Activity:</p>
+            <div className="activity-list mt-2 space-y-2 text-sm">
+              {currentGroup.users &&
+                  currentGroup.users.map((user) =>
+                      user.items.map((item) => (
+                          <p key={item.id}>
+                            <span className="font-bold">{user.memberName}</span> bought
+                            <span className="font-semibold"> {item.item}</span> for
+                            <span className="font-semibold"> S${item.amount}</span>, paid for by
+                            <span className="font-semibold"> {userMap[item.paid_by]}</span>
+                          </p>
+                      ))
+                  )}
+            </div>
+          </div>
+
+          {/* Buttons Section */}
+          <div className="flex justify-center space-x-4 mt-6">
+            <button
+                className="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 transition"
+                onClick={() => handleRedirect("/groups/edit-allocation")}
+            >
+              Edit Allocation
+            </button>
+            <button
+                className="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition"
+                onClick={() => handleRedirect("/groups/summary")}
+            >
+              Settle up!
+            </button>
+          </div>
+        </div>
+        <div className="right-box flex flex-col gap-4">
+          <p className="font-bold">Members:</p>
+          {currentGroup.users &&
+              currentGroup.users.map((member, idx) => (
+                  <div key={idx} className="member-row">
                     <img
-                      src="logo.svg"
-                      className="logo w-8 h-8 mr-2"
-                      alt="Logo"
-                    />
-                    <span className="group-id text-sm">#{selectedGroup}</span>
-                  </div>
-                </div>
-
-                <div className="box">
-                  {currentGroup.users &&
-                    currentGroup.users.map((user) => (
-                      <Droppable key={user.user_id} droppableId={user.user_id}>
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                            className="column"
-                          >
-                            <div className="user-name content">
-                              {user.memberName}
-                            </div>
-                            {user.items &&
-                              user.items.map((item, index) => (
-                                <Draggable
-                                  key={item.id}
-                                  draggableId={item.id.toString()}
-                                  index={index}
-                                >
-                                  {(provided) => (
-                                    <div
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                      className="draggable"
-                                      // Attach tooltip information
-                                      title={`Amount: $${item.amount.toFixed(
-                                        2
-                                      )}, Paid By: ${getUserNameById(
-                                        item.paid_by
-                                      )}`} // Native tooltip
-                                    >
-                                      {item.item} - Price: $
-                                      {item.amount.toFixed(2)}
-                                    </div>
-                                  )}
-                                </Draggable>
-                              ))}
-                            {provided.placeholder}
-                            <div
-                              className="item-count content"
-                              style={{ marginTop: "auto" }}
-                            >
-                              <p>Owes</p>
-                              <p>
-                                {calculateNetAmountOwed(
-                                  currentGroup,
-                                  user.memberName
-                                ).toFixed(2)}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </Droppable>
-                    ))}
-                </div>
-
-                {/* Buttons Section */}
-                <div className="flex justify-center space-x-4 mt-6">
-                  <button
-                    className="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition"
-                    onClick={() => handleRedirect("/groups/settleup")}
-                  >
-                    Settle up!
-                  </button>
-                </div>
-              </div>
-
-              {/* Right Box */}
-              <div className="right-box flex flex-col gap-4">
-                <p className="font-bold">Members:</p>
-                {currentGroup.users &&
-                  currentGroup.users.map((member, idx) => (
-                    <div key={idx} className="member-row">
-                      <img
                         src="avatar.svg"
                         alt={`${member.memberName}'s avatar`}
-                      />
-                      <span className="grouppage-font">
-                        {member.memberName}
-                      </span>
-                    </div>
-                  ))}
-                {selectedGroup && currentGroup && (
-                  <AddMember group_id={selectedGroup} />
-                )}
-              </div>
-            </div>
-            {/* Tooltip Component */}
-          </div>
-        )}
-      </Droppable>
-    </DragDropContext>
+                    ></img>
+                    <span className="grouppage-font">{member.memberName}</span>
+                  </div>
+              ))}
+          {selectedGroup && currentGroup && (
+              <AddMember group_id={selectedGroup}/>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
