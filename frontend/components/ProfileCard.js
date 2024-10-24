@@ -2,28 +2,41 @@
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
-const ProfileCard = ({ userDetails }) => {
-  const [selectedImg, setSelectedImg] = useState(
-    userDetails?.profilePic || "/logo.svg"
-  );
+const ProfileCard = ({ userDetails, onUpdate }) => {
+  // State for all database fields
   const [formData, setFormData] = useState({
-    name: userDetails?.name || "",
-    email: userDetails?.email || "",
-    phone: userDetails?.phone || "",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
+    username: "",
+    email: "",
+    phone: "",
+    pic_url: "",
   });
 
+  const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Update form data when userDetails prop changes
+  useEffect(() => {
+    if (userDetails) {
+      setFormData({
+        username: userDetails.username || "",
+        email: userDetails.email || "",
+        phone: userDetails.phone || "",
+        pic_url: userDetails.pic_url || "/logo.svg",
+      });
+    }
+  }, [userDetails]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
-      setSelectedImg(imageUrl);
+      setFormData((prev) => ({
+        ...prev,
+        pic_url: imageUrl,
+      }));
+      setIsEditing(true);
     }
   };
 
@@ -35,50 +48,39 @@ const ProfileCard = ({ userDetails }) => {
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
+    setFormData((prev) => ({
+      ...prev,
       [id]: value,
     }));
+    setIsEditing(true);
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // try {
-    //   const token = localStorage.getItem("token");
-    //   const response = await fetch(
-    //     `https://your-backend-api.com/update-user/${userDetails.user_id}`,
-    //     {
-    //       method: "POST",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         Authorization: `Bearer ${token}`, // Authenticate with token
-    //       },
-    //       body: JSON.stringify(formData),
-    //     }
-    //   );
 
-    //   if (response.ok) {
-    //     alert("Profile updated successfully");
-    //   } else {
-    //     alert("Failed to update profile");
-    //   }
-    // } catch (error) {
-    //   console.error("Error updating profile:", error);
-    // }
+    // Create submission object with only the database fields
+    const submissionData = {
+      username: formData.username,
+      email: formData.email,
+      phone: formData.phone,
+      pic_url: formData.pic_url,
+    };
 
-    try {
-      const token = localStorage.getItem("token");
-      // const response = await fetch
-
-      if (FAKE_RESPONSE_TRUE.ok) {
-        alert("Profile Updated");
-      } else {
-        alert("Failed to update profile");
-      }
-    } catch (error) {
-      console.error("Error updating profile:", error);
+    // Only submit if there are actual changes
+    if (isEditing) {
+      await onUpdate(submissionData);
+      setIsEditing(false);
+      window.location.reload();
     }
+  };
+
+  const hasChanges = () => {
+    return (
+      formData.username !== userDetails?.username ||
+      formData.email !== userDetails?.email ||
+      formData.phone !== userDetails?.phone ||
+      formData.pic_url !== userDetails?.pic_url
+    );
   };
 
   return (
@@ -89,7 +91,7 @@ const ProfileCard = ({ userDetails }) => {
             <header className="flex items-center justify-between w-full py-2">
               <div className="flex items-center space-x-4">
                 <img
-                  src={selectedImg}
+                  src={formData.pic_url}
                   alt="Avatar"
                   width="96"
                   height="96"
@@ -98,12 +100,12 @@ const ProfileCard = ({ userDetails }) => {
                 />
                 <div className="space-y-1.5">
                   <h1 className="text-2xl font-bold">
-                    {formData.name || "USERNAME"}
+                    {formData.username || "USERNAME"}
                   </h1>
                 </div>
               </div>
               <div>
-                <Button size="sm" onClick={handleImgClick}>
+                <Button type="button" size="sm" onClick={handleImgClick}>
                   Change Picture
                 </Button>
                 <input
@@ -120,11 +122,11 @@ const ProfileCard = ({ userDetails }) => {
                 <h2 className="text-lg font-semibold">Personal Information</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Label htmlFor="name">Name</Label>
+                    <Label htmlFor="username">Name</Label>
                     <Input
-                      id="name"
+                      id="username"
                       placeholder="Enter your name"
-                      value={formData.name}
+                      value={formData.username}
                       onChange={handleChange}
                     />
                   </div>
@@ -150,45 +152,14 @@ const ProfileCard = ({ userDetails }) => {
                   </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <h2 className="text-lg font-semibold">Change Password</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label htmlFor="currentPassword">Current Password</Label>
-                    <Input
-                      id="currentPassword"
-                      placeholder="Enter your current password"
-                      type="password"
-                      value={formData.currentPassword}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="newPassword">New Password</Label>
-                    <Input
-                      id="newPassword"
-                      placeholder="Enter your new password"
-                      type="password"
-                      value={formData.newPassword}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
-                    <Input
-                      id="confirmPassword"
-                      placeholder="Confirm your new password"
-                      type="password"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-              </div>
             </div>
             <div className="mt-8">
-              <Button size="lg" type="submit">
-                Save
+              <Button
+                size="lg"
+                type="submit"
+                disabled={!isEditing || !hasChanges()}
+              >
+                Save Changes
               </Button>
             </div>
           </div>

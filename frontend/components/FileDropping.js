@@ -58,20 +58,46 @@ const FileDropping = ({ className, selectedGroup, setSelectedGroup }) => {
   };
 
   const handleFiles = async (files) => {
+    const encodedImages = [];
+
     for (const file of files) {
       console.log("Processing file:", file.name); // Log the file name
 
-      convertImageToBase64(file, async (base64String) => {
-        console.log("Base64 Encoded Image:", base64String);
-        // Store in localStorage or handle as needed
-        localStorage.setItem(`base64File_${file.name}`, base64String); // Store with unique key
+      // Convert each image to Base64 and add to the array
+      await new Promise((resolve) => {
+        convertImageToBase64(file, (base64String) => {
+          encodedImages.push({
+            filename: file.name,
+            data: base64String,
+          });
+          resolve();
+        });
       });
     }
 
-    const groupId = await apiClient.get(
-      `/v1/get/get-group-id/${selectedGroup}`
-    );
-    router.push(`/split-page?groupId=${groupId.data.group_id}`);
+    console.log("Encoded Images:", encodedImages);
+
+    // Send the list of encoded images to the backend
+    try {
+      const groupId = await apiClient.get(
+        `/v1/get/get-group-id/${selectedGroup}`
+      );
+
+      // Send the images and the groupId to the backend
+      const response = await apiClient.post("/v1/upload-images", {
+        groupId: groupId.data.group_id,
+        images: encodedImages, // Sending all encoded images
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        console.log("Images uploaded successfully");
+        router.push(`/split-page?groupId=${groupId.data.group_id}`);
+      } else {
+        console.error("Error uploading images:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error uploading images:", error);
+    }
   };
 
   const handleClick = () => {

@@ -6,27 +6,22 @@ import { useRouter } from "next/navigation";
 import AddMember from "@/app/groups/createGroup";
 import apiClient from "@/app/axios";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import useAuth from "@/hooks/useAuth";
 
 const GroupPage = () => {
-  const userId = "6706087b1143dcab37a70f34"; // Assume this is current user
+  const { user, loading } = useAuth();
   const router = useRouter();
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [groups, setGroups] = useState([]);
   const [originalGroupData, setOriginalGroupData] = useState(null);
   const [changed, setChanged] = useState(false);
-
-  const getGroupName = async (groupId) => {
-    try {
-      const response = await apiClient.get(`/v1/get/get-group-name/${groupId}`);
-      return response.data.group_name;
-    } catch (error) {
-      console.error("Error fetching group name:", error);
-      return "Unnamed Group";
-    }
-  };
+  const userId = user?.user_id;
+  localStorage.clear();
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("your userid", userId);
+      if (loading || !userId) return;
       try {
         const responseData = await apiClient.get(`/v1/expense/all/${userId}`);
         const data = responseData.data.data.groups;
@@ -41,13 +36,24 @@ const GroupPage = () => {
         setGroups(groupsWithNames);
         const storedGroupId = localStorage.getItem("selectedGroupId");
         setSelectedGroup(storedGroupId || data[0]?.group_id);
+        localStorage.setItem("userId", userId);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [userId, loading]);
+
+  const getGroupName = async (groupId) => {
+    try {
+      const response = await apiClient.get(`/v1/get/get-group-name/${groupId}`);
+      return response.data.group_name;
+    } catch (error) {
+      console.error("Error fetching group name:", error);
+      return "Unnamed Group";
+    }
+  };
 
   useEffect(() => {
     //Store original group data when a group is selected
@@ -62,17 +68,21 @@ const GroupPage = () => {
         "You have unsaved changes. Would you like to save before continuing?"
       );
       if (confirmSave) {
-        localStorage.setItem("selectedGroup", JSON.stringify(currentGroup));
-        console.log(currentGroup)
+        console.log(currentGroup);
         console.log("Saving Changes...");
+        localStorage.setItem("selectedGroup", JSON.stringify(currentGroup));
 
-        apiClient.put("/v1/expense", {
-          currentGroup,
-        }).then(r => router.push(path));
+        apiClient
+          .put("/v1/expense", {
+            currentGroup,
+          })
+          .then((r) => router.push(path));
       } else {
         router.push(path);
       }
     } else {
+      localStorage.setItem("selectedGroup", JSON.stringify(currentGroup));
+
       router.push(path);
     }
   };
@@ -214,6 +224,14 @@ const GroupPage = () => {
                                       title={`Amount: $${item.amount.toFixed(
                                         2
                                       )}, Paid By: ${getUserNameById(item.paid_by)}`}
+                                      style={{
+                                        backgroundColor:
+                                          item.paid_by === user.user_id
+                                            ? "#f0a500"
+                                            : "#2c2c2c", // Change background if paid_by is the same user
+
+                                        ...provided.draggableProps.style,
+                                      }}
                                     >
                                       {item.item} - Price: $
                                       {item.amount.toFixed(2)}
@@ -262,7 +280,9 @@ const GroupPage = () => {
                         alt={`${member.memberName}'s avatar`}
                       />
                       <span className="grouppage-font">
-                        {member.memberName}
+                        {member.user_id === userId
+                          ? `${member.memberName} (you)`
+                          : member.memberName}
                       </span>
                     </div>
                   ))}
