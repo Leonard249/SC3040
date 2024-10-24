@@ -26,7 +26,6 @@ const HomePage = () => {
   return (
     <div>
       <Home></Home>
-      <LogoutButton /> {/* Add a logout button */}
     </div>
   );
 };

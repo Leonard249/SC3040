@@ -16,7 +16,6 @@ const GroupPage = () => {
   const [originalGroupData, setOriginalGroupData] = useState(null);
   const [changed, setChanged] = useState(false);
   const userId = user?.user_id;
-  localStorage.clear();
 
   useEffect(() => {
     const fetchData = async () => {
