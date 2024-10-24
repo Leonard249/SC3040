@@ -11,8 +11,8 @@ const AddGroup = ({ userId, userEmail, groups, setGroups }) => {
 
   const handleAddGroup = async () => {
     const formattedGroup = {
-      name: newGroup.groupName,
-      users: newGroup.members.filter(
+      group_name: newGroup.groupName,
+      user_list: newGroup.members.filter(
         (email) => email !== userEmail && email !== ""
       ), // Exclude current user's email and empty emails
     };
@@ -20,11 +20,15 @@ const AddGroup = ({ userId, userEmail, groups, setGroups }) => {
     console.log("Sending group data:", JSON.stringify(formattedGroup, null, 2));
 
     try {
-      const response = await apiClient.post("/v1/groups", formattedGroup, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await apiClient.post(
+        "/v1/groups/invite",
+        formattedGroup,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.status === 200 || response.status === 201) {
         const addedGroup = response.data;
