@@ -4,12 +4,16 @@ from fastapi import Body, status, HTTPException
 from pydantic import BaseModel, Field
 from typing import List
 import uuid
+import requests
 from bson import ObjectId
 from fastapi import APIRouter
 from src.group.model import GroupModel, User
 from src.group.database import group_collection
 
 from src.group.database import db
+
+from src.group.database import pending_user_collection
+from src.group.model import GroupInvite
 
 ROUTE_PREFIX = "/" + os.getenv("EXPENSE_SERVICE_VERSION") + "/groups"
 router = APIRouter(prefix=ROUTE_PREFIX, tags=["group-service"])
@@ -106,3 +110,35 @@ async def get_user_from_group(group_id: str):
         raise HTTPException(status_code=500, detail="Invalid data structure for group users.")
 
     return {"message": "successful", "data": return_group}
+
+
+@router.post("/invite")
+async def invite_users(group_invite: GroupInvite):
+    group = await group_collection.find_one({"_id": ObjectId(group_invite.group_id)})
+
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found.")
+
+    for user_invite in group_invite.user_list:
+        email_invite = user_invite.email
+
+        pending_user = {
+            "group_id": group["_id"],
+            "email": email_invite
+        }
+
+        # Insert the object into the collection
+        pending_user = await pending_user_collection.insert_one(pending_user)
+        inserted_id = pending_user.inserted_id
+
+        payload = {
+            "pending_user_id": str(inserted_id),
+            "email": email_invite,
+            "group_name": group["name"]
+        }
+        api_url = os.environ.get("EMAIL_SERVER") + "send-invite-link"
+        response = requests.post(api_url, json=payload)
+        if response.status_code != 200:
+            raise RuntimeError(f"Failed to send email: {response.text}")
+
+    return {"message": "successful"}

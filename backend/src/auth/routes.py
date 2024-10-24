@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from src.auth.schemas import UserCreate, UserLogin, PasswordResetConfirm, PasswordResetRequest
-from src.auth.utils import get_password_hash, verify_password, create_access_token
-from src.auth.database import get_user_by_email, create_user, send_reset_email, update_user_password, is_token_blacklisted, blacklist_token
+from src.auth.utils import get_password_hash, verify_password, create_access_token, send_reset_email
+from src.auth.database import get_user_by_email_or_username, create_user, update_user_password, is_token_blacklisted, blacklist_token
 
 ROUTE_PREFIX = "/" + os.getenv("EXPENSE_SERVICE_VERSION") + "/auth"
 router = APIRouter(prefix=ROUTE_PREFIX, tags=["auth-service"])
@@ -16,16 +16,16 @@ ALGORITHM = "HS256"
 
 @router.post("/register")
 async def register(user: UserCreate):
-    db_user = await get_user_by_email(user.email)
+    db_user = await get_user_by_email_or_username(user.email)
     if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=400, detail="Email or username already registered")
     hashed_password = get_password_hash(user.password)
-    user_id = await create_user(user.email, hashed_password)
+    user_id = await create_user(user.email, user.phone_number, user.username, user.pic_url, hashed_password)
     return {"message": "User registered successfully", "user_id": str(user_id)}
 
 @router.post("/login")
 async def login(user: UserLogin):
-    db_user = await get_user_by_email(user.email)
+    db_user = await get_user_by_email_or_username(user.email_or_username)
     if not db_user or not verify_password(user.password, db_user["password"]):
         raise HTTPException(status_code=400, detail="Invalid credentials")
     access_token = create_access_token({"sub": db_user["email"]})
@@ -47,7 +47,7 @@ async def logout(token: str = Depends(oauth2_scheme)):
 
 @router.post("/forgetpassword")
 async def forgetpassword(request: PasswordResetRequest):
-    user = await get_user_by_email(request.email)
+    user = await get_user_by_email_or_username(request.email)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     reset_token = create_access_token({"sub": user["email"]})
