@@ -8,6 +8,7 @@ const Rescan_Manual_Buttons = ({ className, setItems }) => {
   const router = useRouter();
 
   const handleRescan = () => {
+    localStorage.clear();
     router.push("/scan-receipt");
   };
 

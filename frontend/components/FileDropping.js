@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import apiClient from "@/app/axios"; // Import the GROUP_USER_ITEM and ALL_USERS constants
 import { useRouter } from "next/navigation"; // Import useRouter
 
@@ -38,7 +38,6 @@ const FileDropping = ({ className, selectedGroup, setSelectedGroup }) => {
 
     if (!selectedGroup) {
       alert("Please select a group before uploading.");
-      window.location.reload();
       return;
     }
 
@@ -54,7 +53,6 @@ const FileDropping = ({ className, selectedGroup, setSelectedGroup }) => {
     // Check if a group is selected
     if (!selectedGroup) {
       alert("Please select a group before uploading."); // Pop-out message
-      window.location.reload(); // Refresh the page
       return; // Prevent routing
     }
 
@@ -90,16 +88,11 @@ const FileDropping = ({ className, selectedGroup, setSelectedGroup }) => {
         `/v1/get/get-group-id/${selectedGroup}`
       );
 
-      // Send the images and the groupId to the backend
-      const response = await apiClient.post("/v1/ocr/scan", {
-        images: encodedImages, // Sending the list of base64 strings
-      });
-
-      if (response.status === 200 || response.status === 201) {
+      if (groupId.status === 200 || groupId.status === 201) {
         console.log("Images uploaded successfully");
         router.push(`/split-page?groupId=${groupId.data.group_id}`);
       } else {
-        console.error("Error uploading images:", response.statusText);
+        console.error("Error uploading images:", groupId.statusText);
       }
     } catch (error) {
       console.error("Error uploading images:", error);

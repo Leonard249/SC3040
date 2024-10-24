@@ -25,16 +25,22 @@ class GroupService:
             print(f"An error occurred: {e}")
             return None
 
-    async def add_user_to_group(self, pending_user_id, user_id):
+    async def add_user_to_group(self, pending_user_id, user_id, user_email):
         pending_user = await self.pending_user_collection.find_one({"_id": ObjectId(pending_user_id)})
+        if not pending_user:
+            return
+        if 'email' not in pending_user or pending_user['email'] != user_email:
+            print(f"Wrong Pending Credentials")
+            return None
+
         group_id = pending_user["group_id"]
 
         try:
             existing_user = await self.group_collection.find_one(
                 {
-                    "_id": ObjectId(group_id),  # Match the group by its ObjectId
+                    "_id": ObjectId(group_id),
                     "users": {
-                        "$elemMatch": {  # Check if the user already exists
+                        "$elemMatch": {
                             "user_id": ObjectId(user_id)
                         }
                     }
@@ -45,17 +51,18 @@ class GroupService:
                 print(f"User with ID {user_id} is already in the group.")
                 return None
 
-            # If the user is not found, proceed to add them
             result = await self.group_collection.update_one(
-                {"_id": ObjectId(group_id)},  # Match the group by its ObjectId
+                {"_id": ObjectId(group_id)},
                 {
-                    "$push": {  # Use the $push operator to add the new user to the array
+                    "$push": {
                         "users": {
                             "user_id": ObjectId(user_id)
                         }
                     }
                 }
             )
+            if pending_user:
+                await self.pending_user_collection.delete_one({"_id": ObjectId(pending_user_id)})
 
             if result.modified_count > 0:
                 return await self.group_collection.find_one({"_id": ObjectId(group_id)})
