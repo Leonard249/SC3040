@@ -10,33 +10,40 @@ const FileDropping = ({ className, selectedGroup, setSelectedGroup }) => {
 
   const convertImageToBase64 = (file, callback) => {
     const reader = new FileReader();
-
-    // Define the onload event for the FileReader
     reader.onloadend = () => {
-      // reader.result will contain the base64 encoded string
       callback(reader.result);
     };
-
-    // Read the file as a data URL (Base64 encoded string)
+    reader.onerror = (error) => {
+      console.error("Error reading file:", error);
+      alert("There was an error reading the file.");
+    };
     reader.readAsDataURL(file);
   };
-
   const handleDrop = async (e) => {
     e.preventDefault();
     setDragging(false);
-    const droppedFiles = Array.from(e.dataTransfer.files); // Get all dropped files
-    setFiles(droppedFiles); // Store all files
+    const droppedFiles = Array.from(e.dataTransfer.files);
 
-    // Check if a group is selected
-    if (!selectedGroup) {
-      alert("Please select a group before uploading."); // Pop-out message
-      window.location.reload(); // Refresh the page
-      return; // Prevent routing
+    // Validate file types
+    const validFiles = droppedFiles.filter((file) =>
+      file.type.startsWith("image/")
+    );
+
+    if (validFiles.length === 0) {
+      alert("Please drop only image files.");
+      return;
     }
 
-    // Proceed to navigate if both files and a group are selected
-    if (droppedFiles.length > 0) {
-      await handleFiles(droppedFiles); // Handle the dropped files
+    setFiles(validFiles);
+
+    if (!selectedGroup) {
+      alert("Please select a group before uploading.");
+      window.location.reload();
+      return;
+    }
+
+    if (validFiles.length > 0) {
+      await handleFiles(validFiles);
     }
   };
 
@@ -66,16 +73,16 @@ const FileDropping = ({ className, selectedGroup, setSelectedGroup }) => {
       // Convert each image to Base64 and add to the array
       await new Promise((resolve) => {
         convertImageToBase64(file, (base64String) => {
-          encodedImages.push({
-            filename: file.name,
-            data: base64String,
-          });
+          encodedImages.push(base64String); // Directly push the base64 string to the array
           resolve();
         });
       });
     }
 
     console.log("Encoded Images:", encodedImages);
+
+    // Store the images in local storage
+    localStorage.setItem("encodedImages", JSON.stringify(encodedImages));
 
     // Send the list of encoded images to the backend
     try {
@@ -84,9 +91,8 @@ const FileDropping = ({ className, selectedGroup, setSelectedGroup }) => {
       );
 
       // Send the images and the groupId to the backend
-      const response = await apiClient.post("/v1/upload-images", {
-        groupId: groupId.data.group_id,
-        images: encodedImages, // Sending all encoded images
+      const response = await apiClient.post("/v1/ocr/scan", {
+        images: encodedImages, // Sending the list of base64 strings
       });
 
       if (response.status === 200 || response.status === 201) {
@@ -119,10 +125,12 @@ const FileDropping = ({ className, selectedGroup, setSelectedGroup }) => {
       <input
         type="file"
         ref={fileInputRef}
-        className="hidden" // Hide the file input
+        className="hidden"
         onChange={handleFileChange}
-        multiple // Allow multiple file selection
+        multiple
+        accept="image/*" // Only accept image files
       />
+
       <p className="text-center">
         Drag & Drop your receipts here
         <br />
