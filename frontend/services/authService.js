@@ -6,7 +6,14 @@ const API_URL = "http://localhost:8888/v1/auth";
 // Login function to authenticate and store the token in cookies
 export const login = async (email, password) => {
   try {
-    const response = await axios.post(`${API_URL}/login`, { email, password });
+    let response;
+    const pending_user_id = sessionStorage.getItem("pending_user_id")
+    if (pending_user_id == null) {
+      response = await axios.post(`${API_URL}/login`, { email, password });
+    }
+    else {
+      response = await axios.post(`${API_URL}/login`, { email, password, pending_user_id });
+    }
 
     const { access_token, token_type, user_id } = response.data;
 
@@ -23,10 +30,14 @@ export const login = async (email, password) => {
 // Register function to register and store user details in cookies
 export const register = async (email, password) => {
   try {
-    const response = await axios.post(`${API_URL}/register`, {
-      email,
-      password,
-    });
+    let response;
+    const pending_user_id = sessionStorage.getItem("pending_user_id")
+    if (pending_user_id == null) {
+      response = await axios.post(`${API_URL}/register`, { email, password });
+    }
+    else {
+      response = await axios.post(`${API_URL}/register`, { email, password, pending_user_id });
+    }
 
     const { message, user_id } = response.data;
 

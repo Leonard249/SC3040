@@ -1,7 +1,7 @@
 "use client";
 import AuthContext from "@/hooks/Auth";
-import { useState, useContext } from "react";
-import { useRouter } from "next/navigation";
+import {useState, useContext, useEffect} from "react";
+import {useRouter, useSearchParams} from "next/navigation";
 import {
   Card,
   CardDescription,
@@ -18,9 +18,17 @@ import { FaGithub } from "react-icons/fa";
 const SignIn = () => {
   const { loginUser } = useContext(AuthContext);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
   const [error, setError] = useState();
+
+  useEffect(() => {
+    const id = searchParams.get("id"); // Get 'id' parameter if it exists
+    if (id) {
+      sessionStorage.setItem("pending_user_id", id); // Store 'id' in localStorage for persistence
+    }
+  }, [searchParams]);
 
   const handleLogin = async (email, password) => {
     try {

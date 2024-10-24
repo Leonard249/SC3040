@@ -1,15 +1,19 @@
+from typing import Optional
+
 from pydantic import BaseModel, EmailStr
 
 class UserCreate(BaseModel):
     email: EmailStr
-    phone_number: str
-    username: str
-    pic_url: str
+    phone_number: Optional[str] = ""
+    username: Optional[str] = ""
+    pic_url: Optional[str] = ""
     password: str
+    pending_user_id: Optional[str] = None
 
 class UserLogin(BaseModel):
-    email_or_username: str
+    email: str
     password: str
+    pending_user_id: Optional[str] = None
 
 class PasswordResetRequest(BaseModel):
     email: EmailStr
