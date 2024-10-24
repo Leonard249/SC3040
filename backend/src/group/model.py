@@ -31,6 +31,7 @@ class InviteUser(BaseModel):
 
 
 class GroupInvite(BaseModel):
-    group_id: str
+    group_name: str
+    user_id: str
     user_list: List[InviteUser]
 
