@@ -41,7 +41,7 @@ async def send_reset_email(user_id: str, token: str):
         raise ValueError("User not found in the database")
     
     email = user["email"]
-    api_url = "http://localhost:5000/api/send-reset-email"
+    api_url = os.environ.get("EMAIL_SERVER") + "send-reset-email"
     payload = {
         "email": email,
         "token": token

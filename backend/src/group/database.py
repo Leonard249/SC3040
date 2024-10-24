@@ -12,3 +12,5 @@ mongo_connection_url = mongo_connection_url.replace("<MONGO_PASSWORD>", os.envir
 mongoClient = AsyncIOMotorClient(mongo_connection_url)
 db = mongoClient[os.environ.get("DB_NAME")]
 group_collection = db["groups"]
+
+pending_user_collection = db["pending user"]

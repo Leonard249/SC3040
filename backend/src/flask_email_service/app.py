@@ -39,15 +39,15 @@ def send_invite_link():
     data = request.get_json()
     email = data.get('email')
     group_name = data.get('group_name')
-    link = data.get('link')
+    pending_user_id = data.get('pending_user_id')
 
-    if not email or not group_name or not link:
+    if not email or not group_name or not pending_user_id:
         return jsonify({"error": "Email, group name, and link are required"}), 400
 
     try:
         msg = Message(f"Invitation to join {group_name}",
                       recipients=[email])
-        msg.body = f"You have been invited to join the group '{group_name}'! Click the link below to join:\n\n{link}"
+        msg.body = f"You have been invited to join the group '{group_name}'! Click the link below to join:\n\n{os.environ.get("SERVER")}?id={pending_user_id}"
         mail.send(msg)
         return jsonify({"message": "Invitation link sent successfully"}), 200
     except Exception as e:

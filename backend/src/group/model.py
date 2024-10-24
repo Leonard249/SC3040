@@ -25,3 +25,12 @@ class GroupModel(BaseModel):
         populate_by_name=True,
         arbitrary_types_allowed=True,
     )
+
+class InviteUser(BaseModel):
+    email: str
+
+
+class GroupInvite(BaseModel):
+    group_id: str
+    user_list: List[InviteUser]
+
