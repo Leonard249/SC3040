@@ -30,18 +30,16 @@ class OCRModel:
             f.write(image_data)
         print(f"Image saved to {file_path}")
 
-    def initialiseModel(self, encodedImage):
-
-        self.save_base64_image(encodedImage)
-
+    def initialiseModel(self, encoded_images):
+        """Process a list of base64-encoded images."""
         # Create output directory if it doesn't exist
         os.makedirs(self.output_dir, exist_ok=True)
 
-        # Get a list of all image files in the input directory
-        image_files = glob.glob(os.path.join(self.input_dir, '*.*'))  # Adjust the pattern if needed
+        # Loop over each encoded image in the list
+        for index, encoded_image in enumerate(encoded_images):
+            # Save each image with a unique filename
+            image_path = self.save_base64_image(encoded_image, filename=f"input_image_{index}.png")
 
-        # Iterate over each image file in the input directory
-        for image_path in image_files:
             print(f"Processing {image_path}...")
 
             # Run prediction
@@ -65,13 +63,13 @@ class OCRModel:
                     cropped_image = image[y1:y2, x1:x2]
 
                     # Generate a filename with the class name and index
-                    cropped_filename = f"{class_name}.jpg"
+                    cropped_filename = f"{class_name}_{index}_{i}.jpg"
 
                     # Save the cropped image
                     cv2.imwrite(os.path.join(self.output_dir, cropped_filename), cropped_image)
 
                     # Optionally, save the label (class name and confidence) in a text file
-                    with open(os.path.join(self.output_dir, f"{class_name}.txt"), "w") as f:
+                    with open(os.path.join(self.output_dir, f"{class_name}_{index}_{i}.txt"), "w") as f:
                         f.write(f"Class: {class_name}\n")
                         f.write(f"Confidence: {confidence:.2f}\n")
 
