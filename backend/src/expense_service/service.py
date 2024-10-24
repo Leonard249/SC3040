@@ -129,3 +129,31 @@ class ExpenseService:
             final_structure["groups"].append(group_details)
 
         return final_structure
+
+    async def update_expense(self, users):
+        try:
+            for user in users:
+                user_id = user["user_id"]
+                items = user["items"]
+                for item in items:
+                    expense = await self.expense_collection.find_one({"_id": ObjectId(item["id"])})
+
+                    if expense:
+                        updated_expense = {
+                            "user_id": ObjectId(user_id),
+                            "paid_by": ObjectId(item["paid_by"])
+                        }
+
+                        # Perform the update
+                        update_result = await self.expense_collection.update_one(
+                            {"_id": ObjectId(item["id"])},  # Match the document by its ID
+                            {"$set": updated_expense}  # Set the new attributes
+                        )
+                        if update_result.modified_count > 0:
+                            print(f"Expense updated with ID: {item['id']}")
+                    else:
+                        raise HTTPException(status_code=404, detail=f"Expense with ID {item['id']} not found")
+            return "Successfully Updated"
+
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")

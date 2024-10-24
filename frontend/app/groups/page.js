@@ -63,9 +63,12 @@ const GroupPage = () => {
       );
       if (confirmSave) {
         localStorage.setItem("selectedGroup", JSON.stringify(currentGroup));
+        console.log(currentGroup)
         console.log("Saving Changes...");
-        //send to backend currentgroup
-        router.push(path);
+
+        apiClient.put("/v1/expense", {
+          currentGroup,
+        }).then(r => router.push(path));
       } else {
         router.push(path);
       }

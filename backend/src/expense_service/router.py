@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 import os
 from dotenv import load_dotenv
 
-from .pydantic import ExpenseGroup
+from .pydantic import ExpenseGroup, ExpenseUpdateCurrent
 from .service import ExpenseService
 from .utils import hello_world
 
@@ -56,3 +56,14 @@ async def get_all_expenses(user_id: str):
         return {"message": "Successfully Retrieve", "data": all_expense_result}
     else:
         return {"message": "No Records Found"}
+
+@router.put("/", status_code=200)
+async def update_expense(expense_group: ExpenseUpdateCurrent):
+    expense_group = expense_group.currentGroup
+    users = [user.dict() for user in expense_group.users]
+
+    insert_result = await expense_service.update_expense(users)
+    if insert_result:
+        return {"message": insert_result}
+    else:
+        return {"message": "Failed"}
