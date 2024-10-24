@@ -56,6 +56,8 @@ class GroupService:
                     }
                 }
             )
+            if pending_user:
+                await self.pending_user_collection.delete_one({"_id": pending_user})
 
             if result.modified_count > 0:
                 return await self.group_collection.find_one({"_id": ObjectId(group_id)})
