@@ -9,7 +9,6 @@ import useAuth from "@/hooks/useAuth";
 const ScanReceipt = () => {
   const { user, loading } = useAuth();
   const [dragging, setDragging] = useState(false);
-  const [file, setFile] = useState(null);
   const [groups, setGroups] = useState([]); // State to hold the user's groups
   const [selectedGroup, setSelectedGroup] = useState(""); // State for the selected group
   const fileInputRef = useRef(null); // Ref for the file input
