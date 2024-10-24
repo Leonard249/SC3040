@@ -6,13 +6,14 @@ import { useRouter } from "next/navigation";
 import AddMember from "@/app/groups/createGroup";
 import apiClient from "@/app/axios";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import reacttooltip from "react-tooltip";
 
 const GroupPage = () => {
   const userId = "6706087b1143dcab37a70f34"; // Assume this is current user
   const router = useRouter();
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [groups, setGroups] = useState([]);
+  const [originalGroupData, setOriginalGroupData] = useState(null);
+  const [changed, setChanged] = useState(false);
 
   const getGroupName = async (groupId) => {
     try {
@@ -48,9 +49,29 @@ const GroupPage = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    //Store original group data when a group is selected
+    const currentGroup =
+      groups.find((group) => group.group_id === selectedGroup) || {};
+    setOriginalGroupData(currentGroup);
+  }, [selectedGroup]);
+
   const handleRedirect = (path) => {
-    localStorage.setItem("selectedGroup", JSON.stringify(currentGroup));
-    router.push(path);
+    if (changed) {
+      const confirmSave = window.confirm(
+        "You have unsaved changes. Would you like to save before continuing?"
+      );
+      if (confirmSave) {
+        localStorage.setItem("selectedGroup", JSON.stringify(currentGroup));
+        console.log("Saving Changes...");
+        //send to backend currentgroup
+        router.push(path);
+      } else {
+        router.push(path);
+      }
+    } else {
+      router.push(path);
+    }
   };
 
   const handleGroupChange = (event) => {
@@ -59,8 +80,11 @@ const GroupPage = () => {
     localStorage.setItem("selectedGroupId", newSelectedGroup);
   };
 
-  const currentGroup =
-    groups.find((group) => group.group_id === selectedGroup) || {};
+  const getUserNameById = (userId) => {
+    const user = currentGroup.users.find((user) => user.user_id === userId);
+    console.log(user);
+    return user ? user.memberName : "Unknown User";
+  };
 
   const calculateNetAmountOwed = (currentGroup, userName) => {
     let totalOwed = 0;
@@ -102,10 +126,15 @@ const GroupPage = () => {
       0,
       movedItem
     );
+    // Mark that changes were made
+    setChanged(true);
 
     // Update state
     setGroups([...groups]);
   };
+
+  const currentGroup =
+    groups.find((group) => group.group_id === selectedGroup) || {};
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -179,9 +208,9 @@ const GroupPage = () => {
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
                                       className="draggable"
-                                      data-tip={`Amount: $${item.amount.toFixed(
+                                      title={`Amount: $${item.amount.toFixed(
                                         2
-                                      )}, Paid By: ${item.paid_by}`}
+                                      )}, Paid By: ${getUserNameById(item.paid_by)}`}
                                     >
                                       {item.item} - Price: $
                                       {item.amount.toFixed(2)}

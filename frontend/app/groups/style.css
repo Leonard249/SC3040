@@ -193,13 +193,13 @@
   overflow: hidden; /* prevent overlap of boxes*/
 }
 
-.content {
+/*.content {
   font-family: "Josefin Slab";
   font-weight: normal;
   font-size: 24px;
   margin-right: 10px;
 }
-
+*/
 .column {
   display: flex;
   flex-direction: column;

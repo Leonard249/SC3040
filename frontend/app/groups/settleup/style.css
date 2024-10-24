@@ -14,7 +14,7 @@
   color: #000000;
 }
 
-.box {
+.summaryBox {
   display: inline-block; /* Takes up only as much space as the content */
   width: auto; /* Adjust width automatically based on content */
   padding: 10px; /* Optional: add some padding */

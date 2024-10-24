@@ -57,7 +57,7 @@ const GroupSummaryPage = () => {
       >
         Back
       </button>{" "}
-      <div className="box content">
+      <div className="summaryBox content">
         <div
           style={{
             display: "flex",
