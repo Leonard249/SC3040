@@ -124,11 +124,10 @@ async def invite_users(group_invite: GroupInvite):
     if not group:
         raise HTTPException(status_code=404, detail="Group not found.")
 
-    for user_invite in group_invite.user_list:
-        email_invite = user_invite.email
+    for email_invite in group_invite.user_list:
 
         pending_user = {
-            "group_id": group["_id"],
+            "group_id": ObjectId(group["_id"]),
             "email": email_invite
         }
 

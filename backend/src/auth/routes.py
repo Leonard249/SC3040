@@ -6,6 +6,8 @@ from src.auth.schemas import UserCreate, UserLogin, PasswordResetConfirm, Passwo
 from src.auth.utils import get_password_hash, verify_password, create_access_token, send_reset_email
 from src.auth.database import get_user_by_email_or_username, create_user, update_user_password, is_token_blacklisted, blacklist_token
 
+from src.group.service import GroupService
+
 ROUTE_PREFIX = "/" + os.getenv("EXPENSE_SERVICE_VERSION") + "/auth"
 router = APIRouter(prefix=ROUTE_PREFIX, tags=["auth-service"])
 
@@ -14,6 +16,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
+group_service = GroupService()
+
 @router.post("/register")
 async def register(user: UserCreate):
     db_user = await get_user_by_email_or_username(user.email)
@@ -21,7 +25,10 @@ async def register(user: UserCreate):
         raise HTTPException(status_code=400, detail="Email or username already registered")
     hashed_password = get_password_hash(user.password)
     user_id = await create_user(user.email, user.phone_number, user.username, user.pic_url, hashed_password)
+    if user.pending_user_id is not None:
+        await group_service.add_user_to_group(user.pending_user_id, user_id)
     return {"message": "User registered successfully", "user_id": str(user_id)}
+
 
 @router.post("/login")
 async def login(user: UserLogin):
@@ -29,7 +36,11 @@ async def login(user: UserLogin):
     if not db_user or not verify_password(user.password, db_user["password"]):
         raise HTTPException(status_code=400, detail="Invalid credentials")
     access_token = create_access_token({"sub": db_user["email"]})
+    if user.pending_user_id is not None:
+        await group_service.add_user_to_group(user.pending_user_id, str(db_user["_id"]))
+
     return {"access_token": access_token, "token_type": "bearer", "user_id": str(db_user["_id"])}
+
 
 @router.post("/logout")
 async def logout(token: str = Depends(oauth2_scheme)):
