@@ -15,8 +15,12 @@ from src.group.database import db
 from src.group.database import pending_user_collection
 from src.group.model import GroupInvite
 
+from src.group.service import GroupService
+
 ROUTE_PREFIX = "/" + os.getenv("EXPENSE_SERVICE_VERSION") + "/groups"
 router = APIRouter(prefix=ROUTE_PREFIX, tags=["group-service"])
+
+group_service = GroupService()
 
 
 # Go to sample.json to see example request body
@@ -114,7 +118,8 @@ async def get_user_from_group(group_id: str):
 
 @router.post("/invite")
 async def invite_users(group_invite: GroupInvite):
-    group = await group_collection.find_one({"_id": ObjectId(group_invite.group_id)})
+    group_id = await group_service.create_group_with_owner(group_invite.group_name, group_invite.user_id)
+    group = await group_collection.find_one({"_id": ObjectId(group_id)})
 
     if not group:
         raise HTTPException(status_code=404, detail="Group not found.")
