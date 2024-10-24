@@ -47,7 +47,7 @@ def send_invite_link():
     try:
         msg = Message(f"Invitation to join {group_name}",
                       recipients=[email])
-        msg.body = f"You have been invited to join the group '{group_name}'! Click the link below to join:\n\n{os.environ.get("SERVER")}?id={pending_user_id}"
+        msg.body = f"You have been invited to join the group '{group_name}'! Click the link below to join:\n\n{os.environ.get('SERVER')}?id={pending_user_id}"
         mail.send(msg)
         return jsonify({"message": "Invitation link sent successfully"}), 200
     except Exception as e:
