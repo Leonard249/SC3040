@@ -7,6 +7,7 @@ const Item = ({
   id,
   name,
   amount,
+  originalamount,
   assignedCount,
   ITEM_TYPE,
   setMembers,
@@ -16,7 +17,7 @@ const Item = ({
 }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ITEM_TYPE,
-    item: { id, name, amount },
+    item: { id, name, amount, originalamount },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -24,7 +25,9 @@ const Item = ({
 
   // Calculate display amount based on assigned count
   const displayAmount =
-    assignedCount > 0 ? (amount / assignedCount).toFixed(2) : amount.toFixed(2);
+    assignedCount > 0
+      ? (amount / assignedCount).toFixed(2)
+      : originalamount.toFixed(2);
 
   const handlePutBack = () => {
     setMembers((prevMembers) =>
@@ -47,7 +50,10 @@ const Item = ({
         return prevItems;
       }
       // Add the item back to the list
-      return [...prevItems, { id, name, amount, assignedCount: 0 }];
+      return [
+        ...prevItems,
+        { id, name, amount: originalamount, originalamount, assignedCount: 0 },
+      ];
     });
   };
 

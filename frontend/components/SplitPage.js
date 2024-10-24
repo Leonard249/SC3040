@@ -151,13 +151,6 @@ const SplitPage = () => {
         ),
     };
 
-    // Deduplicate items based on name or other unique property
-    const uniqueItems = Array.from(
-      new Map(transformedData.items.map((item) => [item.name, item])).values()
-    );
-
-    transformedData.items = uniqueItems; // Update the items to be unique
-
     try {
       const response = await apiClient.post("/v1/expense", transformedData, {
         headers: {
@@ -205,6 +198,7 @@ const SplitPage = () => {
                   id={item.id}
                   name={item.name}
                   amount={item.amount}
+                  originalamount={item.amount}
                   assignedCount={item.assignedCount}
                   ITEM_TYPE={ITEM_TYPE}
                   setMembers={setMembers}

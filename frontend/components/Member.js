@@ -13,14 +13,18 @@ const Member = ({ member, assignedItems, ITEM_TYPE, setMembers, setItems }) => {
   }));
 
   const handleDropItem = (item, member) => {
-    setMembers((prevMembers) =>
-      prevMembers.map((m) => {
-        console.log(m);
+    setMembers((prevMembers) => {
+      // Find out if the item is already assigned to another member
+      const isAlreadyAssignedToAnother = prevMembers.some((m) =>
+        m.items.find((i) => i.id === item.id && m.username !== member)
+      );
+
+      return prevMembers.map((m) => {
         if (m.username === member) {
           const existingItem = m.items.find((i) => i.id === item.id);
-          if (!existingItem) {
-            return { ...m, items: [...m.items, { ...item, assignedCount: 1 }] };
-          } else {
+
+          // Case 1: Item is already assigned to the same member, increase assignedCount
+          if (existingItem) {
             return {
               ...m,
               items: m.items.map((i) =>
@@ -30,11 +34,48 @@ const Member = ({ member, assignedItems, ITEM_TYPE, setMembers, setItems }) => {
               ),
             };
           }
-        }
-        return m;
-      })
-    );
 
+          // Case 2: Item is assigned to another member, update amount for the new member
+          if (isAlreadyAssignedToAnother) {
+            const originalItem = prevMembers
+              .find((m) => m.username !== member)
+              .items.find((i) => i.id === item.id);
+
+            // Split the amount between members
+            const originalamount = originalItem.amount;
+            const newAmount = originalItem.amount / 2;
+
+            return {
+              ...m,
+              items: [
+                ...m.items,
+                { ...item, amount: newAmount, assignedCount: 1 },
+              ],
+            };
+          }
+
+          // Case 3: Item is assigned to the member for the first time
+          return {
+            ...m,
+            items: [...m.items, { ...item, assignedCount: 1 }],
+          };
+        }
+
+        // Case 4: If the item is already with another member, update their amount
+        if (isAlreadyAssignedToAnother) {
+          return {
+            ...m,
+            items: m.items.map((i) =>
+              i.id === item.id ? { ...i, amount: i.amount / 2 } : i
+            ),
+          };
+        }
+
+        return m;
+      });
+    });
+
+    // Remove the item from the unassigned list
     setItems((prevItems) => prevItems.filter((i) => i.id !== item.id));
   };
 
@@ -66,6 +107,7 @@ const Member = ({ member, assignedItems, ITEM_TYPE, setMembers, setItems }) => {
             id={item.id}
             name={item.name}
             amount={item.amount}
+            originalamount={item.originalamount}
             assignedCount={item.assignedCount}
             ITEM_TYPE={ITEM_TYPE}
             setMembers={setMembers}
