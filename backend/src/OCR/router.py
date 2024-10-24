@@ -27,7 +27,7 @@ class ImageRequest(BaseModel):
 @router.post("/scan", status_code=200)
 async def get_items_scan(request: ImageRequest):
     try:
-        encoded_image = request.image
+        encoded_image = request.images
 
         result = ocr_service.get_output(encoded_image)
 

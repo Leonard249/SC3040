@@ -25,7 +25,8 @@ class EasyOCRReader:
             return []
 
         # List all image files in the cropped_images folder
-        image_files = [f for f in os.listdir(cropped_images_dir) if f.endswith(('.png', '.jpg', '.jpeg'))]
+        image_files = [f for f in os.listdir(cropped_images_dir) if f.startswith('Item') and f.endswith(('.png', '.jpg', '.jpeg'))]
+
 
         # Initialize a list to hold all items and prices
         all_items_and_prices = []
@@ -55,12 +56,12 @@ class EasyOCRReader:
             print(ocr_output)
 
             # Normalize and remove common headers from the OCR output
-            headers = ["Descr", "ipt", "ion", "QTY", "Qty", "Quantity", "Description", "Amount", "Oty", "Descript"]
+            headers = ["Descr", "ipt", "ion", "QTY", "Qty", "Quantity", "Description", "Amount", "Oty", "Descript","Qly"]
             for header in headers:
                 ocr_output = ocr_output.replace(header, "").strip()
 
             # Define regex pattern to extract item descriptions and prices
-            pattern = r"([A-Za-z0-9\s]+)\s+(\d+\.\d{2})"
+            pattern = r"([A-Za-z0-9\s]+)\s+(\d+[.,]\d{2})"
 
             # Use regex to find all matches for items and prices in the OCR output
             matches = re.findall(pattern, ocr_output)
@@ -68,7 +69,8 @@ class EasyOCRReader:
             # Extract items and prices from matches
             for match in matches:
                 item = match[0].strip()  # Extract item description
-                price = float(match[1])  # Convert price to float
+                price_str= match[1].replace(',','.')  # Convert price to float
+                price = float(price_str)  # Convert price to float
                 all_items_and_prices.append({"item": item, "price": price})  # Store in list
 
         # Return the structured list of items and prices from all images
