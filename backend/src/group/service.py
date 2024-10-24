@@ -44,6 +44,8 @@ class GroupService:
                     }
                 }
             )
+            if pending_user:
+                await self.pending_user_collection.delete_one({"_id": ObjectId(pending_user_id)})
 
             if existing_user:
                 print(f"User with ID {user_id} is already in the group.")
