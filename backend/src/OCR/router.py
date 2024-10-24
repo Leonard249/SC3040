@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 import os
 from dotenv import load_dotenv
 from pydantic import BaseModel
-
+from typing import List
 from .EasyOCR import EasyOCRReader
 
 load_dotenv()
@@ -19,7 +19,8 @@ async def ping() -> dict[str, str]:
 
 
 class ImageRequest(BaseModel):
-    image: str
+    images: List[str]
+
 
 
 # Get Expense

@@ -13,8 +13,12 @@ const ListOfGroups = ({ className, groups, totalOwed, userId }) => {
         {Object.keys(groups)
           .filter((groupId) => {
             const group = groups[groupId];
-            return group.users.some(
-              (member) => member.user_id === userId.toString()
+            const owedAmount = totalOwed[group.group_id] || 0;
+            // Filter groups where the user belongs to the group and the owedAmount is not 0
+            return (
+              group.users.some(
+                (member) => member.user_id === userId.toString()
+              ) && owedAmount !== 0
             );
           })
           .map((groupId) => {
