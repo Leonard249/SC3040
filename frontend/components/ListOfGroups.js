@@ -6,7 +6,7 @@ const ListOfGroups = ({ className, groups, totalOwed, userId }) => {
   console.log(totalOwed);
   return (
     <div className={className}>
-      <h2 className="text-2xl font-bold mb-4">Groups:</h2>
+      <h2 className="text-2xl font-bold mb-4">Groups with expenses:</h2>
       <div className="border-2 border-black p-4 rounded-lg">
         {" "}
         {/* Outer container with black border wrapping only group elements */}

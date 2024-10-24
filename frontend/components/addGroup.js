@@ -12,6 +12,7 @@ const AddGroup = ({ userId, userEmail, groups, setGroups }) => {
   const handleAddGroup = async () => {
     const formattedGroup = {
       group_name: newGroup.groupName,
+      user_id: userId, // Include the user's ID
       user_list: newGroup.members.filter(
         (email) => email !== userEmail && email !== ""
       ), // Exclude current user's email and empty emails
