@@ -25,7 +25,7 @@ async def register(user: UserCreate):
 
 @router.post("/login")
 async def login(user: UserLogin):
-    db_user = await get_user_by_email_or_username(user.email_or_username)
+    db_user = await get_user_by_email_or_username(user.email)
     if not db_user or not verify_password(user.password, db_user["password"]):
         raise HTTPException(status_code=400, detail="Invalid credentials")
     access_token = create_access_token({"sub": db_user["email"]})
