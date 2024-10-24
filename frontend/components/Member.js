@@ -37,21 +37,29 @@ const Member = ({ member, assignedItems, ITEM_TYPE, setMembers, setItems }) => {
 
           // Case 2: Item is assigned to another member, update amount for the new member
           if (isAlreadyAssignedToAnother) {
-            const originalItem = prevMembers
-              .find((m) => m.username !== member)
-              .items.find((i) => i.id === item.id);
+            const otherMember = prevMembers.find((m) =>
+              m.items.find((i) => i.id === item.id && m.username !== member)
+            );
 
-            // Split the amount between members
-            const originalamount = originalItem.amount;
-            const newAmount = originalItem.amount / 2;
+            if (otherMember) {
+              const originalItem = otherMember.items.find(
+                (i) => i.id === item.id
+              );
 
-            return {
-              ...m,
-              items: [
-                ...m.items,
-                { ...item, amount: newAmount, assignedCount: 1 },
-              ],
-            };
+              // Check if the originalItem exists to avoid accessing undefined properties
+              if (originalItem) {
+                const originalamount = originalItem.amount;
+                const newAmount = originalamount / 2;
+
+                return {
+                  ...m,
+                  items: [
+                    ...m.items,
+                    { ...item, amount: newAmount, assignedCount: 1 },
+                  ],
+                };
+              }
+            }
           }
 
           // Case 3: Item is assigned to the member for the first time

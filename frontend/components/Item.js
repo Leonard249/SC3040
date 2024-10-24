@@ -14,6 +14,7 @@ const Item = ({
   item,
   setItems,
   onDelete,
+  checkAllAssigned,
 }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ITEM_TYPE,

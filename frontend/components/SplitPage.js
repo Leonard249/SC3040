@@ -23,6 +23,7 @@ const SplitPage = () => {
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(true); // Loading state to manage the loader visibility
   const [groupName, setGroupName] = useState("");
+  const [assignedItems, setAssignedItems] = useState(items);
   const userId = user?.user_id;
   const fetchCalled = useRef(false);
 
@@ -133,42 +134,55 @@ const SplitPage = () => {
     setItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
+  // Check if all items are assigned
+  // Check if all items are assigned
+  const checkAllAssigned = () => {
+    const unassignedItems = items.filter((item) => item.assignedCount === 0); // Check if any item has an assignedCount of 0
+    if (unassignedItems.length > 0) {
+      alert("Please assign all items before proceeding.");
+      return false;
+    }
+    return true;
+  };
+
   // Submitting the items to backend
   const handleSubmit = async () => {
     console.log(members);
+    if (checkAllAssigned()) {
+      console.log("All items assigned. Proceeding with submission.");
+      const transformedData = {
+        group: groupId,
+        items: members
+          .filter((member) => member.items.length > 0) // Only consider members with non-empty items
+          .flatMap((member) =>
+            member.items.map((item) => ({
+              name: item.name, // Set name of the item
+              cost: item.amount, // Set cost of the item (from amount)
+              user_id: member.id, // Set user_id from member id
+              paid_by: userId, // Placeholder for paid_by (update this as needed)
+            }))
+          ),
+      };
 
-    const transformedData = {
-      group: groupId,
-      items: members
-        .filter((member) => member.items.length > 0) // Only consider members with non-empty items
-        .flatMap((member) =>
-          member.items.map((item) => ({
-            name: item.name, // Set name of the item
-            cost: item.amount, // Set cost of the item (from amount)
-            user_id: member.id, // Set user_id from member id
-            paid_by: userId, // Placeholder for paid_by (update this as needed)
-          }))
-        ),
-    };
+      try {
+        const response = await apiClient.post("/v1/expense", transformedData, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
-    try {
-      const response = await apiClient.post("/v1/expense", transformedData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+        if (response.status === 200) {
+          // Check for success using response status
 
-      if (response.status === 200) {
-        // Check for success using response status
+          alert("Expenses submitted successfully");
 
-        alert("Expenses submitted successfully");
-
-        window.location.href = "/";
-      } else {
-        console.error("Error adding group:", response.statusText);
+          window.location.href = "/";
+        } else {
+          console.error("Error adding group:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error adding group:", error);
       }
-    } catch (error) {
-      console.error("Error adding group:", error);
     }
   };
 
@@ -205,6 +219,7 @@ const SplitPage = () => {
                   item={item}
                   setItems={setItems}
                   onDelete={handleDeleteItem}
+                  checkAllAssigned={checkAllAssigned}
                 />
               ))}
               <Rescan_Manual_Buttons
