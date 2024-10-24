@@ -19,7 +19,6 @@ async def ping() -> dict[str, str]:
 
 
 class ImageRequest(BaseModel):
-    groupid: str
     images: List[str]
 
 
