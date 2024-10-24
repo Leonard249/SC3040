@@ -1,2 +1,0 @@
-Class: Tax
-Confidence: 0.54

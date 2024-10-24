@@ -1,2 +1,0 @@
-Class: Item
-Confidence: 0.93

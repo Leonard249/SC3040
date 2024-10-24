@@ -1,2 +1,0 @@
-Class: Address
-Confidence: 0.54
