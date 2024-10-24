@@ -18,6 +18,7 @@ ALGORITHM = "HS256"
 
 group_service = GroupService()
 
+
 @router.post("/register")
 async def register(user: UserCreate):
     db_user = await get_user_by_email_or_username(user.email)
@@ -26,7 +27,7 @@ async def register(user: UserCreate):
     hashed_password = get_password_hash(user.password)
     user_id = await create_user(user.email, user.phone_number, user.username, user.pic_url, hashed_password)
     if user.pending_user_id is not None:
-        await group_service.add_user_to_group(user.pending_user_id, user_id)
+        await group_service.add_user_to_group(user.pending_user_id, user_id, user.email)
     return {"message": "User registered successfully", "user_id": str(user_id)}
 
 
@@ -37,7 +38,7 @@ async def login(user: UserLogin):
         raise HTTPException(status_code=400, detail="Invalid credentials")
     access_token = create_access_token({"sub": db_user["email"]})
     if user.pending_user_id is not None:
-        await group_service.add_user_to_group(user.pending_user_id, str(db_user["_id"]))
+        await group_service.add_user_to_group(user.pending_user_id, str(db_user["_id"]), db_user["email"])
 
     return {"access_token": access_token, "token_type": "bearer", "user_id": str(db_user["_id"])}
 

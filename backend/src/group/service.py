@@ -25,8 +25,12 @@ class GroupService:
             print(f"An error occurred: {e}")
             return None
 
-    async def add_user_to_group(self, pending_user_id, user_id):
+    async def add_user_to_group(self, pending_user_id, user_id, user_email):
         pending_user = await self.pending_user_collection.find_one({"_id": ObjectId(pending_user_id)})
+        if 'email' not in pending_user or pending_user['email'] != user_email:
+            print(f"Wrong Pending Credentials")
+            return None
+
         group_id = pending_user["group_id"]
 
         try:
@@ -56,6 +60,8 @@ class GroupService:
                     }
                 }
             )
+            if pending_user:
+                await self.pending_user_collection.delete_one({"_id": ObjectId(pending_user_id)})
 
             if result.modified_count > 0:
                 return await self.group_collection.find_one({"_id": ObjectId(group_id)})
