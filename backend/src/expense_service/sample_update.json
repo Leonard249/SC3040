@@ -1,0 +1,104 @@
+{
+  "currentGroup": {
+    "group_id": "6703f81b87a2a0c2808251a5",
+    "users": [
+      {
+        "user_id": "6706087b1143dcab37a70f34",
+        "memberName": "laddererrerererer",
+        "items": [
+          {
+            "id": "67053dd0cb8d604f40a8f0c5",
+            "item": "example",
+            "amount": 2.2,
+            "paid_by": "6706087b1143dcab37a70f35"
+          },
+          {
+            "id": "67053dd0cb8d604f40a8f0c6",
+            "item": "example",
+            "amount": 3.2,
+            "paid_by": "6706087b1143dcab37a70f35"
+          },
+          {
+            "id": "6708aa97330d90b28e77a688",
+            "item": "POKKA  HOUJIChA NO SU",
+            "amount": 1.75,
+            "paid_by": "6706087b1143dcab37a70f35"
+          },
+          {
+            "id": "6708aa97330d90b28e77a689",
+            "item": "CAVENDISH BANANA",
+            "amount": 2.6,
+            "paid_by": "6706087b1143dcab37a70f35"
+          },
+          {
+            "id": "6708d73d0cb63cbf7a7c2dec",
+            "item": "POKKA  HOUJICha NO SU",
+            "amount": 1.75,
+            "paid_by": "6706087b1143dcab37a70f34"
+          },
+          {
+            "id": "670a27b2417ad91f19c1975d",
+            "item": "37 NISSIN BIG CUP NOODL",
+            "amount": 2.42,
+            "paid_by": "6706087b1143dcab37a70f34"
+          }
+        ]
+      },
+      {
+        "user_id": "6706087b1143dcab37a70f35",
+        "memberName": "Uncle",
+        "items": [
+          {
+            "id": "67053dd0cb8d604f40a8f0c4",
+            "item": "example",
+            "amount": 1.2,
+            "paid_by": "6706087b1143dcab37a70f34"
+          },
+          {
+            "id": "6708ad9e330d90b28e77a68a",
+            "item": "POKKA  HOUJIChA NO SU",
+            "amount": 1.75,
+            "paid_by": "6706087b1143dcab37a70f35"
+          },
+          {
+            "id": "6708cfbc131dd00bd8a6888d",
+            "item": "Descr ipt ion  NISSIN BIG CUP  NOOOL",
+            "amount": 2.42,
+            "paid_by": "6706087b1143dcab37a70f35"
+          },
+          {
+            "id": "6708d73d0cb63cbf7a7c2dee",
+            "item": "fish",
+            "amount": 5,
+            "paid_by": "6706087b1143dcab37a70f34"
+          },
+          {
+            "id": "6708d73d0cb63cbf7a7c2ded",
+            "item": "CAVENDISH BANANA",
+            "amount": 2.6,
+            "paid_by": "6706087b1143dcab37a70f34"
+          }
+        ]
+      },
+      {
+        "user_id": "6706087b1143dcab37a70f36",
+        "memberName": "Wei",
+        "items": [
+          {
+            "id": "6708ad9e330d90b28e77a68b",
+            "item": "CAVENDISH BANANA",
+            "amount": 2.6,
+            "paid_by": "6706087b1143dcab37a70f35"
+          },
+          {
+            "id": "6708cfbc131dd00bd8a6888e",
+            "item": "37 NISSIN BIG CUP NOODL",
+            "amount": 2.42,
+            "paid_by": "6706087b1143dcab37a70f35"
+          }
+        ]
+      }
+    ],
+    "group_name": "Tech Enthusiasts"
+  }
+}
