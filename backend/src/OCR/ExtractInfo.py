@@ -15,9 +15,12 @@ class OCRModel:
         self.output_dir = os.path.join(base_dir, 'cropped_images')  # Dynamic path for the output directory
 
     def save_base64_image(self, encoded_image, filename='input_image.png'):
-        """Decode a base64 image and save it as a PNG file in the input directory."""
         # Create input directory if it doesn't exist
         os.makedirs(self.input_dir, exist_ok=True)
+
+        # Split the base64 string to remove the MIME type (if present)
+        if "," in encoded_image:
+            encoded_image = encoded_image.split(",")[1]  # Only take the part after 'base64,'
 
         # Decode base64 to binary data
         image_data = base64.b64decode(encoded_image)
@@ -29,6 +32,8 @@ class OCRModel:
         with open(file_path, 'wb') as f:
             f.write(image_data)
         print(f"Image saved to {file_path}")
+
+        return file_path
 
     def initialiseModel(self, encoded_images):
         """Process a list of base64-encoded images."""
