@@ -5,7 +5,7 @@ import "./style.css";
 import { useRouter } from "next/navigation";
 
 const GroupSummaryPage = () => {
-  const userId = "6706087b1143dcab37a70f34"; // Assume this is current user
+  const userId = localStorage.getItem("userId");
   const router = useRouter();
   const [owedAmounts, setOwedAmounts] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
@@ -21,20 +21,32 @@ const GroupSummaryPage = () => {
 
   const calculateOwedAmounts = (groupData) => {
     const owedAmounts = {};
+
+    // Initialize the owedAmounts object for each user except the current user
     groupData.users.forEach((user) => {
-      owedAmounts[user.memberName] = 0; // Start with zero owed
+      if (user.user_id !== userId) {
+        owedAmounts[user.memberName] = 0; // Start with zero owed
+      }
     });
 
+    // Loop through users
     groupData.users.forEach((user) => {
-      user.items.forEach((item) => {
-        const payerName = groupData.users.find(
-          (u) => u.user_id === item.paid_by
-        )?.memberName;
+      // Only process items bought by the current user
+      if (user.user_id === userId) {
+        user.items.forEach((item) => {
+          // If the item was not paid by the current user, find the actual payer
+          if (item.paid_by !== userId) {
+            const payer = groupData.users.find(
+              (u) => u.user_id === item.paid_by
+            );
 
-        if (payerName && payerName !== user.memberName) {
-          owedAmounts[user.memberName] += item.amount; // Add to what this user owes
-        }
-      });
+            // If the payer is found, add the item amount to what the current user owes the payer
+            if (payer) {
+              owedAmounts[payer.memberName] += item.amount;
+            }
+          }
+        });
+      }
     });
 
     setOwedAmounts(owedAmounts); // Save calculated amounts in state
