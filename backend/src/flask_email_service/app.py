@@ -47,7 +47,40 @@ def send_invite_link():
     try:
         msg = Message(f"Invitation to join {group_name}",
                       recipients=[email])
-        msg.body = f"You have been invited to join the group '{group_name}'! Click the link below to join:\n\n{os.environ.get('SERVER')}?id={pending_user_id}"
+
+        # TODO: Remove
+        if not os.environ.get('SERVER_SIGN_UP'):
+            os.environ['SERVER_SIGN_UP'] = 'http://localhost:3000/sign-up'
+
+        msg.html = f"""
+            <html>
+                <body>
+                    <div style="background: linear-gradient(to right, #FFEB3B, #FFC107); padding: 20px; text-align: center;">
+                        <h1 style="color: #4CAF50; margin: 0;">Invitation to join {group_name}</h1>
+                    </div>
+                    <p style="text-align: center;">You have been invited to join the group <strong>{group_name}</strong>!</p>
+                    <p style="text-align: center;">Please click the button below to join:</p>
+                    <div style="text-align: center;">
+                        <a href="{os.environ.get('SERVER')}?id={pending_user_id}" 
+                           style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                           Join Now
+                        </a>
+                    </div>
+                    <p style="text-align: center;">No account? Join Now:</p>
+                    <div style="text-align: center;">
+                        <a href="{os.environ.get('SERVER_SIGN_UP')}?id={pending_user_id}" 
+                           style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                           Sign Up
+                        </a>
+                    </div>
+                    <br><br>
+                    <p style="text-align: center;">If the button doesn't work, click the link below:</p>
+                    <p style="text-align: center;">
+                        <a href="{os.environ.get('SERVER')}?id={pending_user_id}">{os.environ.get('SERVER')}?id={pending_user_id}</a>
+                    </p>
+                </body>
+            </html>
+            """
         mail.send(msg)
         return jsonify({"message": "Invitation link sent successfully"}), 200
     except Exception as e:
