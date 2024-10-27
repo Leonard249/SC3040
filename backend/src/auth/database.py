@@ -20,6 +20,8 @@ async def get_user_by_email_or_username(email_or_username: str):
 
 async def create_user(email: str, phone_number: str, username: str, pic_url: str, hashed_password: str):
     try:
+        if username == "" or username is None:
+            username = email
         user = User(email=email, phone_number=phone_number, username=username, pic_url=pic_url, password=hashed_password)
         user_cursor = await users_collection.insert_one(user.model_dump())
         return user_cursor.inserted_id
