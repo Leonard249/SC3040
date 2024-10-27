@@ -1,3 +1,5 @@
+For the backend to be fully operational, you need to run both the main server and the email server.
+
 Creating a new Virtual Environment (terminal should be in backend):
 
 `python -m venv venv`
@@ -5,6 +7,8 @@ Creating a new Virtual Environment (terminal should be in backend):
 `cd venv/Scripts`
 
 `activate`
+
+Email server is used for the requirements of Resetting Password, Group Invite
 
 To run email server locally
 
@@ -27,7 +31,3 @@ Run with tox (recommended):
 To import:
 
 `pip install -r requirements.txt`
-
-To run individual tests:
-
-`pytest {file to tests, from tests/}`

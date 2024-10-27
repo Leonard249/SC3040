@@ -124,6 +124,8 @@ async def invite_users(group_invite: GroupInvite):
     if not group:
         raise HTTPException(status_code=404, detail="Group not found.")
 
+    failed_emails = []
+
     for email_invite in group_invite.user_list:
 
         pending_user = {
@@ -143,6 +145,12 @@ async def invite_users(group_invite: GroupInvite):
         api_url = os.environ.get("EMAIL_SERVER") + "send-invite-link"
         response = requests.post(api_url, json=payload)
         if response.status_code != 200:
-            raise RuntimeError(f"Failed to send email: {response.text}")
+            failed_emails.append(f"Email server error for {email_invite}: {response.text}")
+
+        if failed_emails:
+            return {
+                "message": "Some emails failed to send.",
+                "failed_emails": failed_emails
+            }
 
     return {"message": "successful"}
